@@ -11,8 +11,8 @@
     }
   ],
   "routes": [
-    { "src": "/indian-foods.json", "dest": "/public/indian-foods.json" },
     { "src": "/api/(.*)", "dest": "/server.js" },
+    { "src": "/(.+\\.(png|json|js|ico|webmanifest))$", "dest": "/public/$1" },
     { "src": "/(.*)", "dest": "/public/index.html" }
   ]
 }
