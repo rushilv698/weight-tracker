@@ -287,9 +287,11 @@ window.FS = {
     return doc.exists ? doc.data().entries || {} : {};
   },
   async saveWeight(uid, date, weight) {
-    await db.collection('users').doc(uid).collection('data').doc('weights').set(
-      { [`entries.${date}`]: weight }, { merge: true }
-    );
+    const ref = db.collection('users').doc(uid).collection('data').doc('weights');
+    const doc = await ref.get();
+    const entries = doc.exists ? (doc.data().entries || {}) : {};
+    entries[date] = weight;
+    await ref.set({ entries });
   },
   async saveWeights(uid, entries) {
     await db.collection('users').doc(uid).collection('data').doc('weights').set({ entries }, { merge: true });
@@ -302,6 +304,26 @@ const { useState, useEffect, useRef, useCallback, useMemo } = React;
 
 const todayStr = () => new Date().toISOString().split('T')[0];
 const formatDate = (d) => new Date(d+'T00:00:00').toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'});
+
+// Resize image to max 800px and compress to reduce upload size
+function resizeImage(file, maxSize = 800) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const canvas = document.createElement('canvas');
+      let w = img.width, h = img.height;
+      if (w > h && w > maxSize) { h = h * maxSize / w; w = maxSize; }
+      else if (h > maxSize) { w = w * maxSize / h; h = maxSize; }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/jpeg', 0.7));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+    img.src = url;
+  });
+}
 
 function calcBMR(weight, height, age, gender) {
   const base = (10 * weight) + (6.25 * height) - (5 * age);
@@ -352,24 +374,26 @@ function App() {
     try {
       const p = await FS.getProfile(u);
       setProfile(p);
-      const [w, m] = await Promise.all([
-        FS.getWeights(u).catch(()=>({})),
-        FS.getAllMeals(u).catch(()=>({}))
-      ]);
+    } catch(e) { console.error('Profile load error:', e); }
+    try {
+      const w = await FS.getWeights(u);
       setWeights(w || {});
+    } catch(e) { console.error('Weights load error:', e); setWeights({}); }
+    try {
+      const m = await FS.getAllMeals(u);
       setMeals(m || {});
-    } catch(e) { console.error('Load error:', e); }
+    } catch(e) { console.error('Meals load error:', e); setMeals({}); }
   };
 
   const reloadMeals = async () => {
     if (!uid) return;
-    const m = await FS.getAllMeals(uid);
-    setMeals(m || {});
+    try { const m = await FS.getAllMeals(uid); setMeals(m || {}); }
+    catch(e) { console.error('Reload meals error:', e); }
   };
   const reloadWeights = async () => {
     if (!uid) return;
-    const w = await FS.getWeights(uid);
-    setWeights(w || {});
+    try { const w = await FS.getWeights(uid); setWeights(w || {}); }
+    catch(e) { console.error('Reload weights error:', e); }
   };
   const reloadProfile = async () => {
     if (!uid) return;
@@ -748,13 +772,8 @@ function LogMealPage({ user, uid, foods, showToast, setPage, reloadMeals }) {
     if (!file) return;
     setAnalyzing(true); setMode('analyzing');
     try {
-      // Convert to base64 and send as JSON (works on Vercel)
-      const reader = new FileReader();
-      const base64 = await new Promise((resolve, reject) => {
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
+      const base64 = await resizeImage(file);
+      if (!base64) throw new Error('Could not read image');
       const res = await fetch('/api/analyze-food', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -927,6 +946,8 @@ function ItemsReview({ items, updateQty, removeItem, totalCal, onAddMore, onSave
 // ==================== WEIGHT TRACKER ====================
 function WeightPage({ user, uid, showToast, reloadWeights, reloadProfile }) {
   const [weight, setWeight] = useState('');
+  const [targetWeight, setTargetWeight] = useState(user.profile.targetWeight || '');
+  const [editingTarget, setEditingTarget] = useState(false);
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [analysis, setAnalysis] = useState('');
   const [analyzing, setAnalyzing] = useState(false);
@@ -944,16 +965,34 @@ function WeightPage({ user, uid, showToast, reloadWeights, reloadProfile }) {
   const startWeight = p.startWeight || currentWeight;
   const startDate = p.startDate || sortedDates[0] || todayStr();
   const daysSinceStart = Math.floor((new Date(todayStr()) - new Date(startDate)) / 86400000);
-  const estimatedWeight = startWeight - (p.targetLossPerWeek / 7) * daysSinceStart;
-  const weightDiff = currentWeight - estimatedWeight;
+  const goalWeight = p.targetWeight || (startWeight - (p.targetLossPerWeek / 7) * daysSinceStart);
+  const weightDiff = currentWeight - goalWeight;
+  const totalToLose = startWeight - (p.targetWeight || startWeight - 10);
+  const lost = startWeight - currentWeight;
 
   const logWeight = async () => {
     if (!weight) return;
     await FS.saveWeight(uid, todayStr(), parseFloat(weight));
     await FS.saveProfile(uid, { weight: parseFloat(weight) });
-    showToast('Weight updated!');
+    showToast('Weight logged!');
     setWeight('');
     reloadWeights();
+    reloadProfile();
+  };
+
+  const deleteWeight = async (date) => {
+    const updated = {...weights};
+    delete updated[date];
+    await FS.saveWeights(uid, updated);
+    showToast('Weight entry deleted');
+    reloadWeights();
+  };
+
+  const saveTarget = async () => {
+    if (!targetWeight) return;
+    await FS.saveProfile(uid, { targetWeight: parseFloat(targetWeight) });
+    showToast('Target weight saved!');
+    setEditingTarget(false);
     reloadProfile();
   };
 
@@ -975,34 +1014,53 @@ function WeightPage({ user, uid, showToast, reloadWeights, reloadProfile }) {
   useEffect(() => {
     if (!chartRef.current || sortedDates.length < 2) return;
     if (chartInstance.current) chartInstance.current.destroy();
-    const estimatedData = sortedDates.map(d => { const days = Math.floor((new Date(d) - new Date(startDate)) / 86400000); return startWeight - (p.targetLossPerWeek / 7) * days; });
+    const targetLine = sortedDates.map(() => p.targetWeight || null);
+    const datasets = [
+      { label:'Actual Weight', data:sortedDates.map(d=>weights[d]), borderColor:'#6c5ce7', backgroundColor:'rgba(108,92,231,0.1)', fill:true, tension:0.4, pointRadius:4, pointBackgroundColor:'#6c5ce7', borderWidth:2 },
+    ];
+    if (p.targetWeight) {
+      datasets.push({ label:'Target', data:targetLine, borderColor:'#00b894', borderDash:[8,4], tension:0, pointRadius:0, borderWidth:2 });
+    }
     chartInstance.current = new Chart(chartRef.current, {
       type: 'line',
       data: {
         labels: sortedDates.map(d => new Date(d+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short'})),
-        datasets: [
-          { label:'Actual Weight', data:sortedDates.map(d=>weights[d]), borderColor:'#6c5ce7', backgroundColor:'rgba(108,92,231,0.1)', fill:true, tension:0.4, pointRadius:4, pointBackgroundColor:'#6c5ce7', borderWidth:2 },
-          { label:'Estimated Weight', data:estimatedData, borderColor:'#00cec9', borderDash:[5,5], tension:0.4, pointRadius:0, borderWidth:2 }
-        ]
+        datasets
       },
       options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{color:'#b2b2cc',font:{size:11}}}}, scales:{x:{ticks:{color:'#6c6c8a',font:{size:10},maxRotation:45},grid:{color:'rgba(255,255,255,0.05)'}},y:{ticks:{color:'#6c6c8a',font:{size:11}},grid:{color:'rgba(255,255,255,0.05)'}}} }
     });
     return () => { if(chartInstance.current) chartInstance.current.destroy(); };
-  }, [sortedDates.length, weights]);
+  }, [sortedDates.length, weights, p.targetWeight]);
 
   return (
     <div className="container">
       <div className="header fade-in"><h1>Weight Tracker</h1></div>
+
+      {/* Current / Target / Diff */}
       <div className="card fade-in">
         <div style={{display:'flex',justifyContent:'space-around',textAlign:'center'}}>
           <div><div style={{fontSize:28,fontWeight:900,color:'var(--primary-light)'}}>{currentWeight}</div><div style={{fontSize:11,color:'var(--text3)'}}>Current (kg)</div></div>
           <div style={{width:1,background:'var(--border)'}}></div>
-          <div><div style={{fontSize:28,fontWeight:900,color:'var(--accent)'}}>{estimatedWeight.toFixed(1)}</div><div style={{fontSize:11,color:'var(--text3)'}}>Target (kg)</div></div>
+          <div onClick={()=>setEditingTarget(true)} style={{cursor:'pointer'}}>
+            <div style={{fontSize:28,fontWeight:900,color:'var(--accent)'}}>{p.targetWeight ? p.targetWeight : '—'}</div>
+            <div style={{fontSize:11,color:'var(--text3)'}}>{p.targetWeight ? 'Target (kg)' : 'Set Target'} <span className="material-icons-round" style={{fontSize:10,verticalAlign:'middle'}}>edit</span></div>
+          </div>
           <div style={{width:1,background:'var(--border)'}}></div>
-          <div><div style={{fontSize:28,fontWeight:900,color:weightDiff>0.5?'var(--red)':'var(--green)'}}>{weightDiff>0?'+':''}{weightDiff.toFixed(1)}</div><div style={{fontSize:11,color:'var(--text3)'}}>Diff (kg)</div></div>
+          <div><div style={{fontSize:28,fontWeight:900,color:weightDiff>0.5?'var(--red)':'var(--green)'}}>{p.targetWeight ? (weightDiff>0?'+':'') + weightDiff.toFixed(1) : '—'}</div><div style={{fontSize:11,color:'var(--text3)'}}>To Go (kg)</div></div>
         </div>
-        {weightDiff > 0.5 && <div style={{marginTop:12,padding:8,borderRadius:8,background:'rgba(255,107,107,0.1)',textAlign:'center'}}><span className="badge badge-orange">External Variables Likely</span></div>}
+        {p.targetWeight && weightDiff > 2 && <div style={{marginTop:12,padding:8,borderRadius:8,background:'rgba(255,107,107,0.1)',textAlign:'center'}}><span className="badge badge-orange">External Variables Likely</span></div>}
       </div>
+
+      {/* Set Target Modal */}
+      {editingTarget && <div className="modal-overlay" onClick={()=>setEditingTarget(false)}><div className="modal" onClick={e=>e.stopPropagation()}>
+        <h2 style={{marginBottom:16}}>Set Target Weight</h2>
+        <p style={{fontSize:13,color:'var(--text3)',marginBottom:16}}>What weight do you want to reach?</p>
+        <div className="input-group"><label>Target Weight (kg)</label><input type="number" step="0.1" value={targetWeight} onChange={e=>setTargetWeight(e.target.value)} placeholder="e.g. 85" autoFocus /></div>
+        {targetWeight && currentWeight && <p style={{fontSize:13,color:'var(--accent)',marginBottom:12}}>You need to lose {(currentWeight - parseFloat(targetWeight)).toFixed(1)}kg — approx {Math.ceil((currentWeight - parseFloat(targetWeight)) / p.targetLossPerWeek)} weeks at {p.targetLossPerWeek}kg/week</p>}
+        <button className="btn btn-accent btn-full" onClick={saveTarget}><span className="material-icons-round">check</span> Save Target</button>
+      </div></div>}
+
+      {/* Log Weight */}
       <div className="card fade-in" style={{animationDelay:'0.1s'}}>
         <h3 style={{fontSize:14,marginBottom:12}}>Log Weight</h3>
         <div style={{display:'flex',gap:8}}>
@@ -1010,14 +1068,58 @@ function WeightPage({ user, uid, showToast, reloadWeights, reloadProfile }) {
           <button className="btn btn-primary btn-sm" onClick={logWeight}>Log</button>
         </div>
       </div>
-      <div className="card fade-in" style={{animationDelay:'0.15s'}}>
-        <h3 style={{fontSize:14,marginBottom:8}}>Progress</h3>
-        <div style={{display:'flex',justifyContent:'space-between',fontSize:12,color:'var(--text3)'}}><span>Start: {startWeight}kg</span><span>Lost: {(startWeight - currentWeight).toFixed(1)}kg</span></div>
-        <div className="progress-bar"><div className="progress-bar-fill" style={{width:`${Math.min(100,Math.max(0,((startWeight-currentWeight)/Math.max(1,startWeight-estimatedWeight))*100))}%`,background:'var(--gradient1)'}}></div></div>
-        <p style={{fontSize:11,color:'var(--text3)',textAlign:'center'}}>Goal: lose {p.targetLossPerWeek}kg/week | Budget: {budget} cal/day</p>
-      </div>
-      {sortedDates.length >= 2 && <div className="card fade-in" style={{animationDelay:'0.2s'}}><h3 style={{fontSize:14,marginBottom:8}}>Weight History</h3><div className="chart-container"><canvas ref={chartRef}></canvas></div></div>}
-      <button className="btn btn-primary btn-full fade-in" style={{animationDelay:'0.3s',marginBottom:16}} onClick={doAIAnalysis}><span className="material-icons-round">auto_awesome</span> AI Analysis</button>
+
+      {/* Progress */}
+      {p.targetWeight && (
+        <div className="card fade-in" style={{animationDelay:'0.15s'}}>
+          <h3 style={{fontSize:14,marginBottom:8}}>Progress to Target</h3>
+          <div style={{display:'flex',justifyContent:'space-between',fontSize:12,color:'var(--text3)'}}><span>Start: {startWeight}kg</span><span>Lost: {lost.toFixed(1)}kg</span><span>Goal: {p.targetWeight}kg</span></div>
+          <div className="progress-bar"><div className="progress-bar-fill" style={{width:`${Math.min(100,Math.max(0,(lost/Math.max(0.1,totalToLose))*100))}%`,background:lost>=0?'var(--gradient1)':'var(--gradient3)'}}></div></div>
+          <p style={{fontSize:11,color:'var(--text3)',textAlign:'center'}}>{Math.max(0,(currentWeight - p.targetWeight)).toFixed(1)}kg to go | {p.targetLossPerWeek}kg/week | Budget: {budget} cal/day</p>
+        </div>
+      )}
+
+      {/* Chart */}
+      {sortedDates.length >= 2 && <div className="card fade-in" style={{animationDelay:'0.2s'}}><h3 style={{fontSize:14,marginBottom:8}}>Weight Chart</h3><div className="chart-container"><canvas ref={chartRef}></canvas></div></div>}
+
+      {/* AI Analysis */}
+      <button className="btn btn-primary btn-full fade-in" style={{animationDelay:'0.25s',marginBottom:16}} onClick={doAIAnalysis}><span className="material-icons-round">auto_awesome</span> AI Analysis</button>
+
+      {/* Weight Log History */}
+      {sortedDates.length > 0 && (
+        <div className="fade-in" style={{animationDelay:'0.3s'}}>
+          <h3 style={{fontSize:16,fontWeight:700,marginBottom:12}}>Weight Log</h3>
+          {[...sortedDates].reverse().map((date, i) => {
+            const w = weights[date];
+            const prevDate = sortedDates[sortedDates.indexOf(date) - 1];
+            const prevW = prevDate ? weights[prevDate] : null;
+            const diff = prevW ? (w - prevW) : 0;
+            return (
+              <div key={date} className="meal-card fade-in" style={{animationDelay:`${i*0.03}s`}}>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                  <div>
+                    <div style={{fontWeight:700,fontSize:18,color:'var(--primary-light)'}}>{w} kg</div>
+                    <div style={{fontSize:12,color:'var(--text3)',marginTop:2}}>
+                      {new Date(date+'T00:00:00').toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'})}
+                    </div>
+                  </div>
+                  <div style={{display:'flex',alignItems:'center',gap:12}}>
+                    {prevW && (
+                      <span className="badge" style={{background:diff<=0?'rgba(0,184,148,0.15)':'rgba(255,107,107,0.15)',color:diff<=0?'var(--green)':'var(--red)'}}>
+                        {diff>0?'+':''}{diff.toFixed(1)}kg
+                      </span>
+                    )}
+                    <button onClick={()=>deleteWeight(date)} style={{background:'none',border:'none',color:'var(--text3)',cursor:'pointer',padding:4}} title="Delete">
+                      <span className="material-icons-round" style={{fontSize:18}}>delete_outline</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       {showAnalysis && <div className="modal-overlay" onClick={()=>setShowAnalysis(false)}><div className="modal" onClick={e=>e.stopPropagation()}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
           <h2 style={{margin:0}}>AI Analysis</h2>
