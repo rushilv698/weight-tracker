@@ -764,7 +764,29 @@ function LogMealPage({ user, uid, foods, showToast, setPage, reloadMeals }) {
   const filteredFoods = useMemo(() => {
     let f = allFoods;
     if (searchCat !== 'All') f = f.filter(x=>x.category===searchCat);
-    if (searchQ) { const q = searchQ.toLowerCase(); f = f.filter(x=>x.name.toLowerCase().includes(q) || (x.category||'').toLowerCase().includes(q)); }
+    if (searchQ) {
+      const q = searchQ.toLowerCase().trim();
+      const qWords = q.split(/\s+/);
+      f = f.map(x => {
+        const name = x.name.toLowerCase();
+        const cat = (x.category||'').toLowerCase();
+        // Exact substring match = highest priority
+        if (name.includes(q) || cat.includes(q)) return { ...x, _score: 100 };
+        // All query words found in name
+        const allMatch = qWords.every(w => name.includes(w));
+        if (allMatch) return { ...x, _score: 90 };
+        // Partial word matches (typing "chik" finds "chicken", "piz" finds "pizza")
+        let score = 0;
+        for (const w of qWords) {
+          const nameWords = name.split(/[\s,\-\/()]+/);
+          for (const nw of nameWords) {
+            if (nw.startsWith(w)) score += 10;
+            else if (nw.includes(w)) score += 5;
+          }
+        }
+        return score > 0 ? { ...x, _score: score } : null;
+      }).filter(Boolean).sort((a,b) => b._score - a._score);
+    }
     return f.slice(0, 100);
   }, [allFoods, searchQ, searchCat]);
 
