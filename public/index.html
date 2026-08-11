@@ -123,9 +123,9 @@ input,select,textarea,button { font-family:inherit; }
 .avatar img { width:100%; height:100%; object-fit:cover; }
 
 .calorie-ring-container { text-align:center; padding:24px 0; }
-.calorie-ring { position:relative; width:200px; height:200px; margin:0 auto; display:flex; align-items:center; justify-content:center; }
-.calorie-ring svg { transform:rotate(-90deg); position:absolute; top:0; left:0; }
-.calorie-ring-text { text-align:center; z-index:1; }
+.calorie-ring { position:relative; width:200px; height:200px; margin:0 auto; }
+.calorie-ring svg { transform:rotate(-90deg); width:100%; height:100%; }
+.calorie-ring-text { position:absolute; top:0; left:0; right:0; bottom:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
 .calorie-ring-text .remaining { font-size:36px; font-weight:900; animation:countUp 0.8s ease; }
 .calorie-ring-text .label { font-size:12px; color:var(--text3); margin-top:4px; }
 
@@ -276,8 +276,8 @@ window.FS = {
   async saveMeals(uid, date, meals) {
     await db.collection('users').doc(uid).collection('meals').doc(date).set({ meals, updatedAt: new Date().toISOString() });
   },
-  async getAllMeals(uid, limit = 60) {
-    const snap = await db.collection('users').doc(uid).collection('meals').orderBy(firebase.firestore.FieldPath.documentId(), 'desc').limit(limit).get();
+  async getAllMeals(uid) {
+    const snap = await db.collection('users').doc(uid).collection('meals').get();
     const result = {};
     snap.forEach(doc => { result[doc.id] = doc.data().meals || []; });
     return result;
