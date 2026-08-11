@@ -350,12 +350,12 @@ function App() {
 
   const loadUserData = async (u) => {
     try {
-      const [p, w, m] = await Promise.all([
-        FS.getProfile(u),
-        FS.getWeights(u),
-        FS.getAllMeals(u)
-      ]);
+      const p = await FS.getProfile(u);
       setProfile(p);
+      const [w, m] = await Promise.all([
+        FS.getWeights(u).catch(()=>({})),
+        FS.getAllMeals(u).catch(()=>({}))
+      ]);
       setWeights(w || {});
       setMeals(m || {});
     } catch(e) { console.error('Load error:', e); }
