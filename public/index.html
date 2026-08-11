@@ -391,7 +391,7 @@ function App() {
   }
 
   if (!profile || !profile.height) {
-    return <><SetupPage uid={uid} displayName={profile?.name||uid} onComplete={async (savedProfile)=>{ setProfile(savedProfile); const [w, m] = await Promise.all([FS.getWeights(uid), FS.getAllMeals(uid)]); setWeights(w||{}); setMeals(m||{}); }} showToast={showToast} />{toast && <Toast {...toast} onClose={()=>setToast(null)} />}</>;
+    return <><SetupPage uid={uid} displayName={profile?.name||uid} onComplete={(savedProfile)=>{ setProfile(savedProfile); }} showToast={showToast} />{toast && <Toast {...toast} onClose={()=>setToast(null)} />}</>;
   }
 
   const user = { profile, meals, weights, name: profile.name || uid };
@@ -491,10 +491,14 @@ function SetupPage({ uid, displayName, onComplete, showToast }) {
       startWeight: parseFloat(form.weight),
       startDate: todayStr(),
     };
-    await FS.saveProfile(uid, profile);
-    await FS.saveWeight(uid, todayStr(), parseFloat(form.weight));
-    showToast('Profile setup complete!');
-    onComplete(profile);
+    try {
+      await FS.saveProfile(uid, profile);
+      await FS.saveWeight(uid, todayStr(), parseFloat(form.weight));
+      showToast('Profile setup complete!');
+      await onComplete(profile);
+    } catch(err) {
+      showToast('Error: ' + err.message, 'error');
+    }
   };
 
   const steps = [
