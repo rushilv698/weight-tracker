@@ -15,6 +15,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<!-- Firebase (Firestore only) -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
 <style>
@@ -46,30 +49,23 @@
 body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
 input,select,textarea,button { font-family:inherit; }
 
-/* Animations */
 @keyframes fadeIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
 @keyframes slideUp { from{opacity:0;transform:translateY(100%)} to{opacity:1;transform:translateY(0)} }
 @keyframes slideDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
 @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
-@keyframes glow { 0%,100%{box-shadow:0 0 20px rgba(108,92,231,0.3)} 50%{box-shadow:0 0 40px rgba(108,92,231,0.6)} }
-@keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
 @keyframes spin { to{transform:rotate(360deg)} }
 @keyframes countUp { from{opacity:0;transform:scale(0.5)} to{opacity:1;transform:scale(1)} }
-@keyframes ripple { to{transform:scale(4);opacity:0} }
 @keyframes bounceIn { 0%{transform:scale(0.3);opacity:0} 50%{transform:scale(1.05)} 70%{transform:scale(0.9)} 100%{transform:scale(1);opacity:1} }
-@keyframes confetti { 0%{transform:translateY(0) rotate(0)} 100%{transform:translateY(-200px) rotate(720deg);opacity:0} }
 @keyframes progressFill { from{width:0} }
 
 .fade-in { animation: fadeIn 0.5s ease forwards; }
 .slide-up { animation: slideUp 0.4s ease forwards; }
 .bounce-in { animation: bounceIn 0.6s ease forwards; }
 
-/* Scrollbar */
 ::-webkit-scrollbar { width:6px; }
 ::-webkit-scrollbar-track { background:var(--bg); }
 ::-webkit-scrollbar-thumb { background:var(--primary); border-radius:3px; }
 
-/* Common */
 .container { max-width:480px; margin:0 auto; padding:16px; padding-bottom:90px; }
 .card { background:var(--card); border-radius:var(--radius); padding:20px; margin-bottom:16px; border:1px solid var(--border); transition:all 0.3s ease; }
 .card:hover { border-color:var(--primary); }
@@ -83,41 +79,42 @@ input,select,textarea,button { font-family:inherit; }
 .btn-ghost:hover { border-color:var(--primary); background:rgba(108,92,231,0.1); }
 .btn-full { width:100%; }
 .btn-sm { padding:8px 16px; font-size:13px; border-radius:8px; }
+.btn-google { background:#fff; color:#333; font-weight:600; border:1px solid #ddd; }
+.btn-google:hover { background:#f5f5f5; }
+.btn-google img { width:20px; height:20px; }
+.btn:disabled { opacity:0.5; cursor:not-allowed; }
 
 .input-group { margin-bottom:16px; }
 .input-group label { display:block; font-size:13px; font-weight:500; color:var(--text2); margin-bottom:6px; }
 .input-group input, .input-group select { width:100%; padding:12px 16px; background:var(--bg2); border:1px solid var(--border); border-radius:12px; color:var(--text); font-size:15px; transition:all 0.3s ease; outline:none; }
 .input-group input:focus, .input-group select:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(108,92,231,0.2); }
 .input-group select { appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%236c6c8a' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; padding-right:40px; }
+.input-group .error-text { color:var(--red); font-size:12px; margin-top:4px; }
 
-/* Bottom Nav */
 .bottom-nav { position:fixed; bottom:0; left:0; right:0; background:rgba(18,18,26,0.95); backdrop-filter:blur(20px); border-top:1px solid var(--border); display:flex; justify-content:space-around; padding:8px 0; padding-bottom:max(8px,env(safe-area-inset-bottom)); z-index:100; }
 .nav-item { display:flex; flex-direction:column; align-items:center; gap:2px; padding:6px 12px; border-radius:12px; cursor:pointer; transition:all 0.3s ease; border:none; background:none; color:var(--text3); font-size:10px; font-weight:500; }
 .nav-item.active { color:var(--primary-light); }
 .nav-item.active .material-icons-round { color:var(--primary-light); }
 .nav-item .material-icons-round { font-size:24px; transition:all 0.3s ease; }
 
-/* Header */
 .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding:8px 0; }
 .header h1 { font-size:24px; font-weight:800; background:var(--gradient1); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
 .header-right { display:flex; align-items:center; gap:12px; }
-.avatar { width:36px; height:36px; border-radius:50%; background:var(--gradient1); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; cursor:pointer; }
+.avatar { width:36px; height:36px; border-radius:50%; background:var(--gradient1); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; cursor:pointer; overflow:hidden; }
+.avatar img { width:100%; height:100%; object-fit:cover; }
 
-/* Calorie Ring */
 .calorie-ring-container { text-align:center; padding:24px 0; }
-.calorie-ring { position:relative; width:200px; height:200px; margin:0 auto; }
-.calorie-ring svg { transform:rotate(-90deg); }
-.calorie-ring-text { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; }
+.calorie-ring { position:relative; width:200px; height:200px; margin:0 auto; display:flex; align-items:center; justify-content:center; }
+.calorie-ring svg { transform:rotate(-90deg); position:absolute; top:0; left:0; }
+.calorie-ring-text { text-align:center; z-index:1; }
 .calorie-ring-text .remaining { font-size:36px; font-weight:900; animation:countUp 0.8s ease; }
 .calorie-ring-text .label { font-size:12px; color:var(--text3); margin-top:4px; }
 
-/* Macro pills */
 .macro-row { display:flex; gap:8px; justify-content:center; margin-top:16px; flex-wrap:wrap; }
 .macro-pill { background:var(--bg2); border-radius:12px; padding:10px 16px; text-align:center; flex:1; min-width:70px; border:1px solid var(--border); }
 .macro-pill .value { font-size:16px; font-weight:700; }
 .macro-pill .label { font-size:10px; color:var(--text3); margin-top:2px; }
 
-/* Meal cards */
 .meal-card { background:var(--bg2); border-radius:12px; padding:14px; margin-bottom:10px; border:1px solid var(--border); animation:fadeIn 0.3s ease forwards; }
 .meal-card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
 .meal-card-header h3 { font-size:14px; font-weight:600; color:var(--primary-light); }
@@ -125,14 +122,10 @@ input,select,textarea,button { font-family:inherit; }
 .meal-item-row { display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.05); }
 .meal-item-row:last-child { border:none; }
 
-/* Modal */
 .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(8px); z-index:200; display:flex; align-items:flex-end; justify-content:center; animation:fadeIn 0.2s ease; }
 .modal { background:var(--bg2); border-radius:24px 24px 0 0; width:100%; max-width:480px; max-height:90vh; overflow-y:auto; padding:24px; animation:slideUp 0.3s ease; }
-.modal-full { border-radius:0; max-height:100vh; height:100vh; }
 .modal h2 { font-size:20px; font-weight:700; margin-bottom:16px; }
-.modal-close { position:absolute; top:16px; right:16px; background:var(--bg3); border:none; color:var(--text); width:32px; height:32px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; }
 
-/* Search */
 .search-box { position:relative; margin-bottom:16px; }
 .search-box input { width:100%; padding:12px 16px 12px 44px; background:var(--bg); border:1px solid var(--border); border-radius:12px; color:var(--text); font-size:15px; outline:none; }
 .search-box input:focus { border-color:var(--primary); }
@@ -144,10 +137,8 @@ input,select,textarea,button { font-family:inherit; }
 .search-result-item .meta { font-size:12px; color:var(--text3); }
 .search-result-item .cal { font-size:14px; font-weight:700; color:var(--accent); }
 
-/* Weight graph */
 .chart-container { position:relative; height:250px; margin:16px 0; }
 
-/* Calendar */
 .calendar-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
 .cal-header { text-align:center; font-size:11px; font-weight:600; color:var(--text3); padding:8px 0; }
 .cal-day { aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:10px; font-size:13px; cursor:pointer; transition:all 0.2s ease; position:relative; }
@@ -158,66 +149,48 @@ input,select,textarea,button { font-family:inherit; }
 .cal-day.over-budget::after { background:var(--red); }
 .cal-day.empty { opacity:0.2; pointer-events:none; }
 
-/* Progress bar */
 .progress-bar { height:8px; background:var(--bg); border-radius:4px; overflow:hidden; margin:8px 0; }
 .progress-bar-fill { height:100%; border-radius:4px; transition:width 0.8s ease; animation:progressFill 1s ease; }
 
-/* Toast */
 .toast { position:fixed; top:20px; left:50%; transform:translateX(-50%); background:var(--card); border:1px solid var(--border); padding:12px 24px; border-radius:12px; z-index:300; animation:slideDown 0.3s ease, fadeIn 0.3s ease; font-size:14px; display:flex; align-items:center; gap:8px; box-shadow:var(--shadow); }
-
-/* Loading spinner */
 .spinner { width:40px; height:40px; border:3px solid var(--border); border-top-color:var(--primary); border-radius:50%; animation:spin 0.8s linear infinite; margin:20px auto; }
 
-/* Info tooltip */
 .info-btn { display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:50%; background:var(--bg3); border:none; color:var(--text3); font-size:12px; cursor:pointer; margin-left:6px; font-weight:700; }
 .tooltip { position:absolute; background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px; font-size:12px; color:var(--text2); z-index:50; width:280px; box-shadow:var(--shadow); line-height:1.5; }
 
-/* Login page */
 .login-page { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; background:radial-gradient(circle at 50% 0%, rgba(108,92,231,0.15), transparent 60%); }
 .login-logo { font-size:48px; font-weight:900; background:var(--gradient1); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:8px; }
 .login-card { background:var(--card); border-radius:24px; padding:32px; width:100%; max-width:400px; border:1px solid var(--border); }
-.user-list { margin-top:16px; }
-.user-item { display:flex; align-items:center; gap:12px; padding:14px; border-radius:12px; cursor:pointer; transition:all 0.2s ease; border:1px solid transparent; }
-.user-item:hover { background:var(--bg3); border-color:var(--primary); }
-.user-avatar { width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:18px; }
-.user-info { flex:1; }
-.user-info .name { font-weight:600; }
-.user-info .meta { font-size:12px; color:var(--text3); }
 
-/* Analysis */
 .analysis-text { font-size:14px; line-height:1.8; color:var(--text2); white-space:pre-wrap; }
 .analysis-text strong, .analysis-text b { color:var(--text); }
 
-/* Quantity editor */
 .qty-editor { display:flex; align-items:center; gap:8px; }
 .qty-btn { width:28px; height:28px; border-radius:50%; border:1px solid var(--border); background:var(--bg); color:var(--text); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:700; }
 .qty-btn:active { background:var(--primary); }
 
-/* Tab pills */
 .tab-pills { display:flex; gap:8px; overflow-x:auto; padding-bottom:8px; margin-bottom:16px; }
 .tab-pill { padding:8px 16px; border-radius:20px; font-size:13px; font-weight:500; border:1px solid var(--border); background:transparent; color:var(--text2); cursor:pointer; white-space:nowrap; transition:all 0.2s ease; }
 .tab-pill.active { background:var(--gradient1); color:#fff; border-color:transparent; }
 
-/* Status badge */
 .badge { display:inline-flex; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:600; }
 .badge-green { background:rgba(0,184,148,0.15); color:var(--green); }
 .badge-red { background:rgba(255,107,107,0.15); color:var(--red); }
 .badge-orange { background:rgba(253,203,110,0.15); color:var(--orange); }
 
-/* Camera overlay */
 .camera-options { display:flex; gap:12px; margin:16px 0; }
 .camera-option { flex:1; padding:20px; border-radius:16px; background:var(--bg); border:2px dashed var(--border); text-align:center; cursor:pointer; transition:all 0.3s ease; }
 .camera-option:hover { border-color:var(--primary); background:rgba(108,92,231,0.05); }
 .camera-option .material-icons-round { font-size:36px; color:var(--primary-light); margin-bottom:8px; }
 .camera-option p { font-size:13px; color:var(--text2); }
-
 .file-input { display:none; }
 
-/* Week summary */
-.week-summary { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin:12px 0; }
-.week-day { text-align:center; padding:8px 4px; border-radius:8px; background:var(--bg2); }
-.week-day .day-label { font-size:10px; color:var(--text3); }
-.week-day .day-cal { font-size:12px; font-weight:600; margin-top:2px; }
+.divider { display:flex; align-items:center; gap:12px; margin:20px 0; color:var(--text3); font-size:13px; }
+.divider::before, .divider::after { content:''; flex:1; height:1px; background:var(--border); }
+
+.auth-tabs { display:flex; margin-bottom:24px; border-radius:12px; overflow:hidden; border:1px solid var(--border); }
+.auth-tab { flex:1; padding:12px; text-align:center; font-weight:600; font-size:14px; cursor:pointer; background:transparent; border:none; color:var(--text3); transition:all 0.3s; }
+.auth-tab.active { background:var(--gradient1); color:#fff; }
 
 @media (max-width: 480px) {
   .container { padding:12px; padding-bottom:85px; }
@@ -228,18 +201,83 @@ input,select,textarea,button { font-family:inherit; }
 </head>
 <body>
 <div id="root"></div>
+
+<script>
+// ==================== FIREBASE CONFIG ====================
+// REPLACE with your Firebase project config
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// ==================== FIRESTORE HELPERS ====================
+window.FS = {
+  // Auth - simple username/password in Firestore
+  async login(username, password) {
+    const doc = await db.collection('users').doc(username.toLowerCase().trim()).get();
+    if (!doc.exists) return { error: 'User not found. Sign up first.' };
+    if (doc.data().password !== password) return { error: 'Wrong password.' };
+    return { uid: doc.id, ...doc.data() };
+  },
+  async signup(username, password, name) {
+    const uid = username.toLowerCase().trim();
+    if (!uid || uid.length < 3) return { error: 'Username must be at least 3 characters.' };
+    if (!password || password.length < 4) return { error: 'Password must be at least 4 characters.' };
+    const doc = await db.collection('users').doc(uid).get();
+    if (doc.exists) return { error: 'Username already taken.' };
+    await db.collection('users').doc(uid).set({ password, name: name || uid, createdAt: new Date().toISOString() });
+    return { uid, name: name || uid };
+  },
+
+  async getProfile(uid) {
+    const doc = await db.collection('users').doc(uid).get();
+    return doc.exists ? doc.data() : null;
+  },
+  async saveProfile(uid, profile) {
+    await db.collection('users').doc(uid).set(profile, { merge: true });
+  },
+  async getMeals(uid, date) {
+    const doc = await db.collection('users').doc(uid).collection('meals').doc(date).get();
+    return doc.exists ? doc.data().meals || [] : [];
+  },
+  async saveMeals(uid, date, meals) {
+    await db.collection('users').doc(uid).collection('meals').doc(date).set({ meals, updatedAt: new Date().toISOString() });
+  },
+  async getAllMeals(uid, limit = 60) {
+    const snap = await db.collection('users').doc(uid).collection('meals').orderBy(firebase.firestore.FieldPath.documentId(), 'desc').limit(limit).get();
+    const result = {};
+    snap.forEach(doc => { result[doc.id] = doc.data().meals || []; });
+    return result;
+  },
+  async getWeights(uid) {
+    const doc = await db.collection('users').doc(uid).collection('data').doc('weights').get();
+    return doc.exists ? doc.data().entries || {} : {};
+  },
+  async saveWeight(uid, date, weight) {
+    await db.collection('users').doc(uid).collection('data').doc('weights').set(
+      { [`entries.${date}`]: weight }, { merge: true }
+    );
+  },
+  async saveWeights(uid, entries) {
+    await db.collection('users').doc(uid).collection('data').doc('weights').set({ entries }, { merge: true });
+  }
+};
+</script>
+
 <script type="text/babel">
 const { useState, useEffect, useRef, useCallback, useMemo } = React;
 
-// ==================== UTILITY FUNCTIONS ====================
-const DB_KEY = 'calorieTracker_v2';
-const getDB = () => JSON.parse(localStorage.getItem(DB_KEY) || '{"users":{}}');
-const saveDB = (db) => localStorage.setItem(DB_KEY, JSON.stringify(db));
-const today = () => new Date().toISOString().split('T')[0];
+const todayStr = () => new Date().toISOString().split('T')[0];
 const formatDate = (d) => new Date(d+'T00:00:00').toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'});
 
 function calcBMR(weight, height, age, gender) {
-  // Mifflin-St Jeor
   const base = (10 * weight) + (6.25 * height) - (5 * age);
   return gender === 'female' ? base - 161 : base + 5;
 }
@@ -252,177 +290,195 @@ const ACTIVITY_FACTORS = [
   { value: 1.9, label: 'Extremely Active', desc: 'Very heavy exercise, physical labor' },
 ];
 
-// ==================== TOAST COMPONENT ====================
 function Toast({ message, type, onClose }) {
   useEffect(() => { const t = setTimeout(onClose, 3000); return () => clearTimeout(t); }, []);
   const colors = { success: 'var(--green)', error: 'var(--red)', info: 'var(--primary-light)' };
   const icons = { success: 'check_circle', error: 'error', info: 'info' };
-  return (
-    <div className="toast">
-      <span className="material-icons-round" style={{color:colors[type],fontSize:20}}>{icons[type]}</span>
-      {message}
-    </div>
-  );
+  return <div className="toast"><span className="material-icons-round" style={{color:colors[type],fontSize:20}}>{icons[type]}</span>{message}</div>;
 }
 
 // ==================== MAIN APP ====================
 function App() {
-  const [currentUser, setCurrentUser] = useState(null);
+  const [uid, setUid] = useState(() => localStorage.getItem('caltrack_uid'));
+  const [profile, setProfile] = useState(null);
+  const [meals, setMeals] = useState({});
+  const [weights, setWeights] = useState({});
   const [page, setPage] = useState('dashboard');
   const [toast, setToast] = useState(null);
   const [foods, setFoods] = useState([]);
-
-  useEffect(() => {
-    fetch('/indian-foods.json').then(r=>r.json()).then(setFoods).catch(()=>{});
-    const db = getDB();
-    const lastUser = localStorage.getItem('ct_lastUser');
-    if (lastUser && db.users[lastUser]) {
-      setCurrentUser(lastUser);
-    }
-  }, []);
+  const [loading, setLoading] = useState(true);
 
   const showToast = (message, type='success') => setToast({message,type});
 
-  const login = (username) => {
-    setCurrentUser(username);
-    localStorage.setItem('ct_lastUser', username);
+  useEffect(() => {
+    fetch('/indian-foods.json').then(r=>r.json()).then(setFoods).catch(()=>{});
+    if (uid) { loadUserData(uid).then(()=>setLoading(false)); }
+    else { setLoading(false); }
+  }, []);
+
+  const onLogin = async (loggedInUid) => {
+    setUid(loggedInUid);
+    localStorage.setItem('caltrack_uid', loggedInUid);
+    await loadUserData(loggedInUid);
+  };
+
+  const loadUserData = async (u) => {
+    try {
+      const [p, w, m] = await Promise.all([
+        FS.getProfile(u),
+        FS.getWeights(u),
+        FS.getAllMeals(u)
+      ]);
+      setProfile(p);
+      setWeights(w || {});
+      setMeals(m || {});
+    } catch(e) { console.error('Load error:', e); }
+  };
+
+  const reloadMeals = async () => {
+    if (!uid) return;
+    const m = await FS.getAllMeals(uid);
+    setMeals(m || {});
+  };
+  const reloadWeights = async () => {
+    if (!uid) return;
+    const w = await FS.getWeights(uid);
+    setWeights(w || {});
+  };
+  const reloadProfile = async () => {
+    if (!uid) return;
+    const p = await FS.getProfile(uid);
+    setProfile(p);
   };
 
   const logout = () => {
-    setCurrentUser(null);
-    localStorage.removeItem('ct_lastUser');
+    localStorage.removeItem('caltrack_uid');
+    setUid(null); setProfile(null); setMeals({}); setWeights({});
   };
 
-  if (!currentUser) {
-    return <>
-      <LoginPage onLogin={login} showToast={showToast} />
-      {toast && <Toast {...toast} onClose={()=>setToast(null)} />}
-    </>;
+  if (loading) {
+    return <div className="login-page"><div className="spinner"></div><p style={{color:'var(--text3)',marginTop:16}}>Loading...</p></div>;
   }
 
-  const db = getDB();
-  const user = db.users[currentUser];
-  if (!user || !user.profile?.height) {
-    return <>
-      <SetupPage username={currentUser} onComplete={()=>setPage('dashboard')} showToast={showToast} />
-      {toast && <Toast {...toast} onClose={()=>setToast(null)} />}
-    </>;
+  if (!uid) {
+    return <><AuthPage showToast={showToast} onLogin={onLogin} />{toast && <Toast {...toast} onClose={()=>setToast(null)} />}</>;
   }
+
+  if (!profile || !profile.height) {
+    return <><SetupPage uid={uid} displayName={profile?.name||uid} onComplete={()=>loadUserData(uid)} showToast={showToast} />{toast && <Toast {...toast} onClose={()=>setToast(null)} />}</>;
+  }
+
+  const user = { profile, meals, weights, name: profile.name || uid };
 
   const pages = {
-    dashboard: <DashboardPage user={user} username={currentUser} foods={foods} showToast={showToast} />,
-    log: <LogMealPage user={user} username={currentUser} foods={foods} showToast={showToast} setPage={setPage} />,
-    weight: <WeightPage user={user} username={currentUser} showToast={showToast} />,
-    calendar: <CalendarPage user={user} username={currentUser} foods={foods} showToast={showToast} />,
-    settings: <SettingsPage user={user} username={currentUser} showToast={showToast} onLogout={logout} />,
+    dashboard: <DashboardPage user={user} uid={uid} foods={foods} showToast={showToast} reloadMeals={reloadMeals} reloadWeights={reloadWeights} />,
+    log: <LogMealPage user={user} uid={uid} foods={foods} showToast={showToast} setPage={setPage} reloadMeals={reloadMeals} />,
+    weight: <WeightPage user={user} uid={uid} showToast={showToast} reloadWeights={reloadWeights} reloadProfile={reloadProfile} />,
+    calendar: <CalendarPage user={user} uid={uid} foods={foods} showToast={showToast} />,
+    settings: <SettingsPage user={user} uid={uid} showToast={showToast} onLogout={logout} reloadProfile={reloadProfile} />,
   };
 
-  return (
-    <div>
-      {pages[page]}
-      <BottomNav page={page} setPage={setPage} />
-      {toast && <Toast {...toast} onClose={()=>setToast(null)} />}
-    </div>
-  );
+  return <div>{pages[page]}<BottomNav page={page} setPage={setPage} />{toast && <Toast {...toast} onClose={()=>setToast(null)} />}</div>;
 }
 
-// ==================== LOGIN PAGE ====================
-function LoginPage({ onLogin, showToast }) {
-  const [newName, setNewName] = useState('');
-  const [showNew, setShowNew] = useState(false);
-  const db = getDB();
-  const users = Object.keys(db.users);
+// ==================== AUTH PAGE ====================
+function AuthPage({ showToast, onLogin }) {
+  const [mode, setMode] = useState('login');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const createUser = () => {
-    if (!newName.trim()) return;
-    const key = newName.trim().toLowerCase().replace(/\s+/g,'_');
-    if (db.users[key]) { showToast('User already exists','error'); return; }
-    db.users[key] = { name: newName.trim(), profile: {}, meals: {}, weights: {} };
-    saveDB(db);
-    onLogin(key);
-    showToast(`Welcome, ${newName.trim()}!`);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!username || !password) { setError('Fill all fields'); return; }
+    setLoading(true); setError('');
+    try {
+      if (mode === 'login') {
+        const res = await FS.login(username, password);
+        if (res.error) { setError(res.error); setLoading(false); return; }
+        await onLogin(res.uid);
+      } else {
+        const res = await FS.signup(username, password, name);
+        if (res.error) { setError(res.error); setLoading(false); return; }
+        await onLogin(res.uid);
+      }
+    } catch(e) {
+      setError(e.message);
+    }
+    setLoading(false);
   };
 
   return (
     <div className="login-page">
+      <img src="/icon-192.png" style={{width:80,height:80,borderRadius:20,marginBottom:16}} className="fade-in" />
       <div className="login-logo fade-in">CalTrack</div>
       <p style={{color:'var(--text3)',marginBottom:32,fontSize:14}} className="fade-in">Your AI-Powered Calorie Companion</p>
       <div className="login-card fade-in" style={{animationDelay:'0.2s'}}>
-        {users.length > 0 && (
-          <>
-            <h3 style={{fontSize:14,color:'var(--text3)',marginBottom:8}}>Select Profile</h3>
-            <div className="user-list">
-              {users.map((key,i) => (
-                <div key={key} className="user-item fade-in" style={{animationDelay:`${0.1*i}s`}} onClick={()=>onLogin(key)}>
-                  <div className="user-avatar" style={{background:`hsl(${i*60+200},60%,50%)`}}>
-                    {db.users[key].name[0].toUpperCase()}
-                  </div>
-                  <div className="user-info">
-                    <div className="name">{db.users[key].name}</div>
-                    <div className="meta">
-                      {db.users[key].profile?.weight ? `${db.users[key].profile.weight}kg` : 'Setup pending'}
-                    </div>
-                  </div>
-                  <span className="material-icons-round" style={{color:'var(--text3)'}}>chevron_right</span>
-                </div>
-              ))}
-            </div>
-            <div style={{borderTop:'1px solid var(--border)',margin:'16px 0'}}></div>
-          </>
-        )}
-        {!showNew ? (
-          <button className="btn btn-primary btn-full" onClick={()=>setShowNew(true)}>
-            <span className="material-icons-round">person_add</span> New Profile
-          </button>
-        ) : (
-          <div className="fade-in">
+        <div className="auth-tabs">
+          <button className={`auth-tab ${mode==='login'?'active':''}`} onClick={()=>{setMode('login');setError('');}}>Login</button>
+          <button className={`auth-tab ${mode==='signup'?'active':''}`} onClick={()=>{setMode('signup');setError('');}}>Sign Up</button>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          {mode === 'signup' && (
             <div className="input-group">
-              <label>Your Name</label>
-              <input value={newName} onChange={e=>setNewName(e.target.value)} placeholder="Enter your name"
-                onKeyDown={e=>e.key==='Enter'&&createUser()} autoFocus />
+              <label>Display Name</label>
+              <input value={name} onChange={e=>setName(e.target.value)} placeholder="Your name" />
             </div>
-            <div style={{display:'flex',gap:8}}>
-              <button className="btn btn-ghost" style={{flex:1}} onClick={()=>setShowNew(false)}>Cancel</button>
-              <button className="btn btn-primary" style={{flex:2}} onClick={createUser}>Create</button>
-            </div>
+          )}
+          <div className="input-group">
+            <label>Username</label>
+            <input value={username} onChange={e=>setUsername(e.target.value)} placeholder="e.g. rushil" autoCapitalize="none" autoCorrect="off" />
           </div>
-        )}
+          <div className="input-group">
+            <label>Password</label>
+            <input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder={mode==='signup'?'Min 4 characters':'Your password'} />
+          </div>
+          {error && <p style={{color:'var(--red)',fontSize:13,marginBottom:12}}>{error}</p>}
+          <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
+            {loading ? <><div className="spinner" style={{width:20,height:20,margin:0,borderWidth:2}}></div></> : mode==='login' ? 'Login' : 'Create Account'}
+          </button>
+        </form>
       </div>
     </div>
   );
 }
 
 // ==================== SETUP PAGE ====================
-function SetupPage({ username, onComplete, showToast }) {
+function SetupPage({ uid, displayName, onComplete, showToast }) {
   const [step, setStep] = useState(0);
-  const [form, setForm] = useState({ gender:'male', height:'', weight:'', age:'', activityFactor:1.55, targetLossPerWeek:0.5 });
+  const [form, setForm] = useState({ name: displayName||'', gender:'male', height:'', weight:'', age:'', activityFactor:1.55, targetLossPerWeek:0.5 });
   const set = (k,v) => setForm({...form,[k]:v});
 
-  const finish = () => {
+  const finish = async () => {
     if (!form.height || !form.weight || !form.age) { showToast('Fill all fields','error'); return; }
-    const db = getDB();
-    db.users[username].profile = {
-      ...form,
+    const profile = {
+      name: form.name || displayName || 'User',
+      gender: form.gender,
       height: parseFloat(form.height),
       weight: parseFloat(form.weight),
       age: parseInt(form.age),
       activityFactor: parseFloat(form.activityFactor),
       targetLossPerWeek: parseFloat(form.targetLossPerWeek),
       startWeight: parseFloat(form.weight),
-      startDate: today(),
+      startDate: todayStr(),
     };
-    // Set initial weight
-    db.users[username].weights = db.users[username].weights || {};
-    db.users[username].weights[today()] = parseFloat(form.weight);
-    saveDB(db);
+    await FS.saveProfile(uid, profile);
+    await FS.saveWeight(uid, todayStr(), parseFloat(form.weight));
     showToast('Profile setup complete!');
     onComplete();
   };
 
   const steps = [
     <div key="0" className="fade-in">
-      <h2 style={{marginBottom:8}}>Let's set you up</h2>
-      <p style={{color:'var(--text3)',marginBottom:24,fontSize:14}}>We need a few details to calculate your daily calorie needs.</p>
+      <h2 style={{marginBottom:8}}>Welcome, {form.name || 'there'}!</h2>
+      <p style={{color:'var(--text3)',marginBottom:24,fontSize:14}}>Let's set up your profile.</p>
+      <div className="input-group">
+        <label>Your Name</label>
+        <input value={form.name} onChange={e=>set('name',e.target.value)} placeholder="Name" />
+      </div>
       <div className="input-group">
         <label>Gender</label>
         <div style={{display:'flex',gap:8}}>
@@ -443,19 +499,11 @@ function SetupPage({ username, onComplete, showToast }) {
     </div>,
     <div key="1" className="fade-in">
       <h2 style={{marginBottom:24}}>Body Measurements</h2>
-      <div className="input-group">
-        <label>Height (cm)</label>
-        <input type="number" value={form.height} onChange={e=>set('height',e.target.value)} placeholder="e.g. 182" />
-      </div>
-      <div className="input-group">
-        <label>Current Weight (kg)</label>
-        <input type="number" step="0.1" value={form.weight} onChange={e=>set('weight',e.target.value)} placeholder="e.g. 104" />
-      </div>
+      <div className="input-group"><label>Height (cm)</label><input type="number" value={form.height} onChange={e=>set('height',e.target.value)} placeholder="e.g. 182" /></div>
+      <div className="input-group"><label>Current Weight (kg)</label><input type="number" step="0.1" value={form.weight} onChange={e=>set('weight',e.target.value)} placeholder="e.g. 104" /></div>
       <div style={{display:'flex',gap:8}}>
         <button className="btn btn-ghost" style={{flex:1}} onClick={()=>setStep(0)}>Back</button>
-        <button className="btn btn-primary" style={{flex:2}} onClick={()=>(form.height&&form.weight)?setStep(2):showToast('Fill all fields','error')}>
-          Next <span className="material-icons-round">arrow_forward</span>
-        </button>
+        <button className="btn btn-primary" style={{flex:2}} onClick={()=>(form.height&&form.weight)?setStep(2):showToast('Fill all fields','error')}>Next <span className="material-icons-round">arrow_forward</span></button>
       </div>
     </div>,
     <div key="2" className="fade-in">
@@ -463,17 +511,13 @@ function SetupPage({ username, onComplete, showToast }) {
       <div className="input-group">
         <label>Activity Level <ActivityInfoBtn /></label>
         <select value={form.activityFactor} onChange={e=>set('activityFactor',e.target.value)}>
-          {ACTIVITY_FACTORS.map(a=>(
-            <option key={a.value} value={a.value}>{a.label} ({a.value})</option>
-          ))}
+          {ACTIVITY_FACTORS.map(a=><option key={a.value} value={a.value}>{a.label} ({a.value})</option>)}
         </select>
       </div>
       <div className="input-group">
         <label>Weight Loss Target (kg/week)</label>
         <select value={form.targetLossPerWeek} onChange={e=>set('targetLossPerWeek',e.target.value)}>
-          {[0.25,0.5,0.75,1,1.25,1.5,2,2.5,3].map(v=>(
-            <option key={v} value={v}>{v} kg/week</option>
-          ))}
+          {[0.25,0.5,0.75,1,1.25,1.5,2,2.5,3].map(v=><option key={v} value={v}>{v} kg/week</option>)}
         </select>
       </div>
       {form.weight && form.height && form.age && (
@@ -486,9 +530,7 @@ function SetupPage({ username, onComplete, showToast }) {
       )}
       <div style={{display:'flex',gap:8}}>
         <button className="btn btn-ghost" style={{flex:1}} onClick={()=>setStep(1)}>Back</button>
-        <button className="btn btn-accent" style={{flex:2}} onClick={finish}>
-          <span className="material-icons-round">check</span> Start Tracking
-        </button>
+        <button className="btn btn-accent" style={{flex:2}} onClick={finish}><span className="material-icons-round">check</span> Start Tracking</button>
       </div>
     </div>
   ];
@@ -497,9 +539,7 @@ function SetupPage({ username, onComplete, showToast }) {
     <div className="login-page">
       <div className="container" style={{maxWidth:400}}>
         <div style={{display:'flex',gap:8,marginBottom:24}}>
-          {[0,1,2].map(i=>(
-            <div key={i} style={{flex:1,height:4,borderRadius:2,background:i<=step?'var(--primary)':'var(--border)',transition:'all 0.3s'}}></div>
-          ))}
+          {[0,1,2].map(i=><div key={i} style={{flex:1,height:4,borderRadius:2,background:i<=step?'var(--primary)':'var(--border)',transition:'all 0.3s'}}></div>)}
         </div>
         {steps[step]}
       </div>
@@ -512,25 +552,20 @@ function ActivityInfoBtn() {
   return (
     <span style={{position:'relative',display:'inline-block'}}>
       <button className="info-btn" onClick={()=>setShow(!show)}>i</button>
-      {show && (
-        <div className="tooltip fade-in" style={{top:28,right:0}} onClick={()=>setShow(false)}>
-          {ACTIVITY_FACTORS.map(a=>(
-            <div key={a.value} style={{marginBottom:8}}>
-              <strong>{a.label} ({a.value}):</strong> {a.desc}
-            </div>
-          ))}
-          <p style={{marginTop:8,fontStyle:'italic',color:'var(--text3)'}}>Tap to close</p>
-        </div>
-      )}
+      {show && <div className="tooltip fade-in" style={{top:28,right:0}} onClick={()=>setShow(false)}>
+        {ACTIVITY_FACTORS.map(a=><div key={a.value} style={{marginBottom:8}}><strong>{a.label} ({a.value}):</strong> {a.desc}</div>)}
+        <p style={{marginTop:8,fontStyle:'italic',color:'var(--text3)'}}>Tap to close</p>
+      </div>}
     </span>
   );
 }
 
 // ==================== DASHBOARD ====================
-function DashboardPage({ user, username, foods, showToast }) {
+function DashboardPage({ user, uid, foods, showToast, reloadMeals, reloadWeights }) {
   const [showMealModal, setShowMealModal] = useState(null);
+  const [refresh, setRefresh] = useState(0);
   const p = user.profile;
-  const todayMeals = (user.meals && user.meals[today()]) || [];
+  const todayMeals = user.meals[todayStr()] || [];
   const currentWeight = getLatestWeight(user);
 
   const bmr = calcBMR(currentWeight, p.height, p.age, p.gender);
@@ -553,24 +588,19 @@ function DashboardPage({ user, username, foods, showToast }) {
   return (
     <div className="container">
       <div className="header fade-in">
-        <div>
-          <h1>CalTrack</h1>
-          <p style={{fontSize:12,color:'var(--text3)'}}>{formatDate(today())}</p>
-        </div>
+        <div><h1>CalTrack</h1><p style={{fontSize:12,color:'var(--text3)'}}>{formatDate(todayStr())}</p></div>
         <div className="header-right">
           <div className="avatar">{user.name[0].toUpperCase()}</div>
         </div>
       </div>
 
-      {/* Calorie Ring */}
       <div className="card fade-in" style={{animationDelay:'0.1s'}}>
         <div className="calorie-ring-container">
           <div className="calorie-ring">
             <svg width="200" height="200" viewBox="0 0 200 200">
               <circle cx="100" cy="100" r="85" fill="none" stroke="var(--bg)" strokeWidth="12" />
               <circle cx="100" cy="100" r="85" fill="none" stroke={ringColor} strokeWidth="12"
-                strokeDasharray={circumference} strokeDashoffset={dashOffset}
-                strokeLinecap="round" style={{transition:'stroke-dashoffset 1s ease'}} />
+                strokeDasharray={circumference} strokeDashoffset={dashOffset} strokeLinecap="round" style={{transition:'stroke-dashoffset 1s ease'}} />
             </svg>
             <div className="calorie-ring-text">
               <div className="remaining" style={{color:ringColor}}>{Math.round(remaining)}</div>
@@ -578,62 +608,35 @@ function DashboardPage({ user, username, foods, showToast }) {
             </div>
           </div>
           <div className="macro-row">
-            <div className="macro-pill">
-              <div className="value" style={{color:'var(--accent)'}}>{Math.round(consumed)}</div>
-              <div className="label">Eaten</div>
-            </div>
-            <div className="macro-pill">
-              <div className="value" style={{color:'var(--primary-light)'}}>{budget}</div>
-              <div className="label">Budget</div>
-            </div>
-            <div className="macro-pill">
-              <div className="value" style={{color:remaining>=0?'var(--green)':'var(--red)'}}>{Math.round(remaining)}</div>
-              <div className="label">Left</div>
-            </div>
+            <div className="macro-pill"><div className="value" style={{color:'var(--accent)'}}>{Math.round(consumed)}</div><div className="label">Eaten</div></div>
+            <div className="macro-pill"><div className="value" style={{color:'var(--primary-light)'}}>{budget}</div><div className="label">Budget</div></div>
+            <div className="macro-pill"><div className="value" style={{color:remaining>=0?'var(--green)':'var(--red)'}}>{Math.round(remaining)}</div><div className="label">Left</div></div>
           </div>
         </div>
       </div>
 
-      {/* Macros */}
       <div className="card fade-in" style={{animationDelay:'0.2s'}}>
         <h3 style={{fontSize:14,color:'var(--text3)',marginBottom:12}}>Today's Macros</h3>
         <div className="macro-row">
-          <div className="macro-pill">
-            <div className="value" style={{color:'#74b9ff'}}>{Math.round(totalProtein)}g</div>
-            <div className="label">Protein</div>
-          </div>
-          <div className="macro-pill">
-            <div className="value" style={{color:'var(--orange)'}}>{Math.round(totalCarbs)}g</div>
-            <div className="label">Carbs</div>
-          </div>
-          <div className="macro-pill">
-            <div className="value" style={{color:'var(--accent2)'}}>{Math.round(totalFat)}g</div>
-            <div className="label">Fat</div>
-          </div>
+          <div className="macro-pill"><div className="value" style={{color:'#74b9ff'}}>{Math.round(totalProtein)}g</div><div className="label">Protein</div></div>
+          <div className="macro-pill"><div className="value" style={{color:'var(--orange)'}}>{Math.round(totalCarbs)}g</div><div className="label">Carbs</div></div>
+          <div className="macro-pill"><div className="value" style={{color:'var(--accent2)'}}>{Math.round(totalFat)}g</div><div className="label">Fat</div></div>
         </div>
       </div>
 
-      {/* Today's Meals */}
       <div className="fade-in" style={{animationDelay:'0.3s'}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
           <h3 style={{fontSize:16,fontWeight:700}}>Today's Meals</h3>
           <span className="badge badge-green">{todayMeals.length} logged</span>
         </div>
         {todayMeals.map((meal,i) => (
-          <div key={i} className="meal-card" onClick={()=>setShowMealModal({date:today(),index:i})}>
+          <div key={i} className="meal-card" onClick={()=>setShowMealModal({date:todayStr(),index:i})}>
             <div className="meal-card-header">
               <h3>{meal.label || `Meal ${i+1}`}</h3>
-              <span style={{fontSize:15,fontWeight:700,color:'var(--accent)'}}>
-                {meal.items.reduce((a,it)=>a+it.calories*it.qty,0)} cal
-              </span>
+              <span style={{fontSize:15,fontWeight:700,color:'var(--accent)'}}>{meal.items.reduce((a,it)=>a+it.calories*it.qty,0)} cal</span>
             </div>
             <div className="meal-items">
-              {meal.items.map((it,j)=>(
-                <div key={j} className="meal-item-row">
-                  <span>{it.name} {it.qty>1?`x${it.qty}`:''}</span>
-                  <span style={{color:'var(--text3)'}}>{it.calories*it.qty} cal</span>
-                </div>
-              ))}
+              {meal.items.map((it,j)=><div key={j} className="meal-item-row"><span>{it.name} {it.qty>1?`x${it.qty}`:''}</span><span style={{color:'var(--text3)'}}>{it.calories*it.qty} cal</span></div>)}
             </div>
           </div>
         ))}
@@ -645,50 +648,33 @@ function DashboardPage({ user, username, foods, showToast }) {
         )}
       </div>
 
-      {/* Quick weight */}
-      <QuickWeightEntry user={user} username={username} showToast={showToast} />
+      <QuickWeightEntry user={user} uid={uid} showToast={showToast} reloadWeights={reloadWeights} />
 
-      {showMealModal && (
-        <MealDetailModal
-          user={user} username={username}
-          date={showMealModal.date} mealIndex={showMealModal.index}
-          foods={foods} showToast={showToast}
-          onClose={()=>setShowMealModal(null)}
-        />
-      )}
+      {showMealModal && <MealDetailModal user={user} uid={uid} date={showMealModal.date} mealIndex={showMealModal.index} foods={foods} showToast={showToast} onClose={()=>{setShowMealModal(null);reloadMeals();}} />}
     </div>
   );
 }
 
-function QuickWeightEntry({ user, username, showToast }) {
+function QuickWeightEntry({ user, uid, showToast, reloadWeights }) {
   const [weight, setWeight] = useState('');
-  const todayWeight = user.weights && user.weights[today()];
+  const todayWeight = user.weights && user.weights[todayStr()];
   if (todayWeight) return null;
-
-  const save = () => {
+  const save = async () => {
     if (!weight) return;
-    const db = getDB();
-    db.users[username].weights = db.users[username].weights || {};
-    db.users[username].weights[today()] = parseFloat(weight);
-    // Update current weight in profile
-    db.users[username].profile.weight = parseFloat(weight);
-    saveDB(db);
+    await FS.saveWeight(uid, todayStr(), parseFloat(weight));
+    await FS.saveProfile(uid, { weight: parseFloat(weight) });
     showToast('Weight logged!');
     setWeight('');
+    reloadWeights();
   };
-
   return (
     <div className="card fade-in" style={{background:'linear-gradient(135deg,rgba(108,92,231,0.15),rgba(0,206,201,0.1))',borderColor:'var(--primary)'}}>
       <div style={{display:'flex',alignItems:'center',gap:12}}>
         <span className="material-icons-round" style={{color:'var(--primary-light)',fontSize:28}}>monitor_weight</span>
-        <div style={{flex:1}}>
-          <p style={{fontSize:13,fontWeight:600}}>Log today's weight</p>
-          <p style={{fontSize:11,color:'var(--text3)'}}>Weigh yourself before eating</p>
-        </div>
+        <div style={{flex:1}}><p style={{fontSize:13,fontWeight:600}}>Log today's weight</p><p style={{fontSize:11,color:'var(--text3)'}}>Weigh yourself before eating</p></div>
       </div>
       <div style={{display:'flex',gap:8,marginTop:12}}>
-        <input type="number" step="0.1" value={weight} onChange={e=>setWeight(e.target.value)}
-          placeholder="Weight in kg" style={{flex:1,padding:'10px 14px',background:'var(--bg)',border:'1px solid var(--border)',borderRadius:10,color:'var(--text)',fontSize:15,outline:'none'}} />
+        <input type="number" step="0.1" value={weight} onChange={e=>setWeight(e.target.value)} placeholder="Weight in kg" style={{flex:1,padding:'10px 14px',background:'var(--bg)',border:'1px solid var(--border)',borderRadius:10,color:'var(--text)',fontSize:15,outline:'none'}} />
         <button className="btn btn-primary btn-sm" onClick={save}>Log</button>
       </div>
     </div>
@@ -696,8 +682,8 @@ function QuickWeightEntry({ user, username, showToast }) {
 }
 
 // ==================== LOG MEAL PAGE ====================
-function LogMealPage({ user, username, foods, showToast, setPage }) {
-  const [mode, setMode] = useState(null); // null, 'camera', 'search', 'analyzing'
+function LogMealPage({ user, uid, foods, showToast, setPage, reloadMeals }) {
+  const [mode, setMode] = useState(null);
   const [items, setItems] = useState([]);
   const [mealLabel, setMealLabel] = useState('');
   const [searchQ, setSearchQ] = useState('');
@@ -707,33 +693,24 @@ function LogMealPage({ user, username, foods, showToast, setPage }) {
   const cameraRef = useRef();
 
   const categories = ['All', ...new Set(foods.map(f=>f.category))];
-
   const filteredFoods = useMemo(() => {
     let f = foods;
     if (searchCat !== 'All') f = f.filter(x=>x.category===searchCat);
-    if (searchQ) {
-      const q = searchQ.toLowerCase();
-      f = f.filter(x=>x.name.toLowerCase().includes(q) || x.category.toLowerCase().includes(q));
-    }
+    if (searchQ) { const q = searchQ.toLowerCase(); f = f.filter(x=>x.name.toLowerCase().includes(q) || x.category.toLowerCase().includes(q)); }
     return f.slice(0, 100);
   }, [foods, searchQ, searchCat]);
 
   const handleImage = async (file) => {
     if (!file) return;
-    setAnalyzing(true);
-    setMode('analyzing');
+    setAnalyzing(true); setMode('analyzing');
     try {
-      const formData = new FormData();
-      formData.append('image', file);
+      const formData = new FormData(); formData.append('image', file);
       const res = await fetch('/api/analyze-food', { method:'POST', body: formData });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       setItems(data.items.map(it=>({...it, qty: 1})));
       setMode('review');
-    } catch(err) {
-      showToast('Failed to analyze: ' + err.message, 'error');
-      setMode(null);
-    }
+    } catch(err) { showToast('Failed to analyze: ' + err.message, 'error'); setMode(null); }
     setAnalyzing(false);
   };
 
@@ -743,28 +720,21 @@ function LogMealPage({ user, username, foods, showToast, setPage }) {
   };
 
   const removeItem = (idx) => setItems(items.filter((_,i)=>i!==idx));
-  const updateQty = (idx, delta) => {
-    const newItems = [...items];
-    newItems[idx].qty = Math.max(0.5, (newItems[idx].qty||1) + delta);
-    setItems(newItems);
-  };
+  const updateQty = (idx, delta) => { const n = [...items]; n[idx].qty = Math.max(0.5, (n[idx].qty||1) + delta); setItems(n); };
 
-  const saveMeal = () => {
+  const saveMeal = async () => {
     if (items.length === 0) { showToast('Add some items first','error'); return; }
-    const db = getDB();
-    if (!db.users[username].meals) db.users[username].meals = {};
-    if (!db.users[username].meals[today()]) db.users[username].meals[today()] = [];
-    const mealCount = db.users[username].meals[today()].length;
-    db.users[username].meals[today()].push({
-      label: mealLabel || `Meal ${mealCount+1}`,
+    const date = todayStr();
+    const existing = user.meals[date] || [];
+    const newMeals = [...existing, {
+      label: mealLabel || `Meal ${existing.length+1}`,
       time: new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}),
       items: items,
-    });
-    saveDB(db);
+    }];
+    await FS.saveMeals(uid, date, newMeals);
     showToast('Meal logged!');
-    setItems([]);
-    setMode(null);
-    setMealLabel('');
+    setItems([]); setMode(null); setMealLabel('');
+    await reloadMeals();
     setPage('dashboard');
   };
 
@@ -772,151 +742,45 @@ function LogMealPage({ user, username, foods, showToast, setPage }) {
 
   return (
     <div className="container">
-      <div className="header fade-in">
-        <h1>Log Meal</h1>
-      </div>
-
+      <div className="header fade-in"><h1>Log Meal</h1></div>
       {!mode && (
         <div className="fade-in">
-          <div className="input-group">
-            <label>Meal Name (optional)</label>
-            <input value={mealLabel} onChange={e=>setMealLabel(e.target.value)} placeholder="e.g. Breakfast, Lunch, Dinner..." />
-          </div>
+          <div className="input-group"><label>Meal Name (optional)</label><input value={mealLabel} onChange={e=>setMealLabel(e.target.value)} placeholder="e.g. Breakfast, Lunch, Dinner..." /></div>
           <div className="camera-options">
             <div className="camera-option" onClick={()=>cameraRef.current?.click()}>
-              <span className="material-icons-round">photo_camera</span>
-              <p>Take Photo</p>
-              <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="file-input"
-                onChange={e=>handleImage(e.target.files[0])} />
+              <span className="material-icons-round">photo_camera</span><p>Take Photo</p>
+              <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="file-input" onChange={e=>handleImage(e.target.files[0])} />
             </div>
             <div className="camera-option" onClick={()=>fileRef.current?.click()}>
-              <span className="material-icons-round">photo_library</span>
-              <p>Upload Image</p>
-              <input ref={fileRef} type="file" accept="image/*" className="file-input"
-                onChange={e=>handleImage(e.target.files[0])} />
+              <span className="material-icons-round">photo_library</span><p>Upload Image</p>
+              <input ref={fileRef} type="file" accept="image/*" className="file-input" onChange={e=>handleImage(e.target.files[0])} />
             </div>
           </div>
           <div style={{textAlign:'center',margin:'12px 0',color:'var(--text3)',fontSize:13}}>or</div>
-          <button className="btn btn-ghost btn-full" onClick={()=>setMode('search')}>
-            <span className="material-icons-round">search</span> Search Food Database
-          </button>
-
-          {items.length > 0 && (
-            <div style={{marginTop:20}}>
-              <h3 style={{fontSize:16,fontWeight:700,marginBottom:12}}>Added Items ({items.length})</h3>
-              {items.map((it,i)=>(
-                <div key={i} className="meal-card">
-                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                    <div>
-                      <div style={{fontWeight:600,fontSize:14}}>{it.name}</div>
-                      <div style={{fontSize:12,color:'var(--text3)'}}>{it.quantity||it.serving}</div>
-                    </div>
-                    <div style={{display:'flex',alignItems:'center',gap:12}}>
-                      <div className="qty-editor">
-                        <button className="qty-btn" onClick={()=>updateQty(i,-0.5)}>-</button>
-                        <span style={{fontWeight:600,minWidth:24,textAlign:'center'}}>{it.qty}</span>
-                        <button className="qty-btn" onClick={()=>updateQty(i,0.5)}>+</button>
-                      </div>
-                      <span style={{fontWeight:700,color:'var(--accent)',minWidth:50,textAlign:'right'}}>{Math.round(it.calories*it.qty)}</span>
-                      <button onClick={()=>removeItem(i)} style={{background:'none',border:'none',color:'var(--red)',cursor:'pointer'}}>
-                        <span className="material-icons-round" style={{fontSize:20}}>close</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              <div className="card" style={{background:'var(--bg)',textAlign:'center'}}>
-                <span style={{fontSize:13,color:'var(--text3)'}}>Total: </span>
-                <span style={{fontSize:24,fontWeight:900,color:'var(--accent)'}}>{Math.round(totalCal)} cal</span>
-              </div>
-              <div style={{display:'flex',gap:8,marginTop:8}}>
-                <button className="btn btn-ghost" style={{flex:1}} onClick={()=>setMode('search')}>
-                  <span className="material-icons-round">add</span> Add More
-                </button>
-                <button className="btn btn-accent" style={{flex:2}} onClick={saveMeal}>
-                  <span className="material-icons-round">check</span> Save Meal
-                </button>
-              </div>
-            </div>
-          )}
+          <button className="btn btn-ghost btn-full" onClick={()=>setMode('search')}><span className="material-icons-round">search</span> Search Food Database</button>
+          {items.length > 0 && <ItemsReview items={items} updateQty={updateQty} removeItem={removeItem} totalCal={totalCal} onAddMore={()=>setMode('search')} onSave={saveMeal} />}
         </div>
       )}
-
-      {mode === 'analyzing' && (
-        <div style={{textAlign:'center',padding:48}} className="fade-in">
-          <div className="spinner"></div>
-          <p style={{color:'var(--primary-light)',marginTop:16,fontWeight:600}}>Analyzing your food...</p>
-          <p style={{color:'var(--text3)',fontSize:13,marginTop:4}}>AI is identifying items & calories</p>
-        </div>
-      )}
-
+      {mode === 'analyzing' && <div style={{textAlign:'center',padding:48}} className="fade-in"><div className="spinner"></div><p style={{color:'var(--primary-light)',marginTop:16,fontWeight:600}}>Analyzing your food...</p><p style={{color:'var(--text3)',fontSize:13,marginTop:4}}>AI is identifying items & calories</p></div>}
       {mode === 'review' && (
         <div className="fade-in">
           <h3 style={{marginBottom:4}}>AI Detected Items</h3>
           <p style={{fontSize:12,color:'var(--text3)',marginBottom:16}}>Tap quantities to adjust. Search to replace items.</p>
-          {items.map((it,i)=>(
-            <div key={i} className="meal-card bounce-in" style={{animationDelay:`${i*0.1}s`}}>
-              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                <div style={{flex:1}}>
-                  <div style={{fontWeight:600,fontSize:14}}>{it.name}</div>
-                  <div style={{fontSize:12,color:'var(--text3)'}}>{it.quantity}</div>
-                  <div style={{fontSize:11,color:'var(--text3)',marginTop:2}}>
-                    P:{Math.round((it.protein||0)*it.qty)}g C:{Math.round((it.carbs||0)*it.qty)}g F:{Math.round((it.fat||0)*it.qty)}g
-                  </div>
-                </div>
-                <div style={{display:'flex',alignItems:'center',gap:12}}>
-                  <div className="qty-editor">
-                    <button className="qty-btn" onClick={()=>updateQty(i,-0.5)}>-</button>
-                    <span style={{fontWeight:600,minWidth:24,textAlign:'center'}}>{it.qty}</span>
-                    <button className="qty-btn" onClick={()=>updateQty(i,0.5)}>+</button>
-                  </div>
-                  <span style={{fontWeight:700,color:'var(--accent)',minWidth:50,textAlign:'right'}}>{Math.round(it.calories*it.qty)}</span>
-                  <button onClick={()=>removeItem(i)} style={{background:'none',border:'none',color:'var(--red)',cursor:'pointer'}}>
-                    <span className="material-icons-round" style={{fontSize:20}}>close</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-          <div className="card" style={{background:'var(--bg)',textAlign:'center'}}>
-            <span style={{fontSize:13,color:'var(--text3)'}}>Total: </span>
-            <span style={{fontSize:24,fontWeight:900,color:'var(--accent)'}}>{Math.round(totalCal)} cal</span>
-          </div>
-          <div style={{display:'flex',gap:8,marginTop:8}}>
-            <button className="btn btn-ghost" style={{flex:1}} onClick={()=>setMode('search')}>
-              <span className="material-icons-round">add</span> Add More
-            </button>
-            <button className="btn btn-accent" style={{flex:2}} onClick={saveMeal}>
-              <span className="material-icons-round">check</span> Save Meal
-            </button>
-          </div>
+          <ItemsReview items={items} updateQty={updateQty} removeItem={removeItem} totalCal={totalCal} onAddMore={()=>setMode('search')} onSave={saveMeal} />
         </div>
       )}
-
       {mode === 'search' && (
         <div className="fade-in">
           <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:16}}>
-            <button className="btn btn-ghost btn-sm" onClick={()=>setMode(items.length?'review':null)}>
-              <span className="material-icons-round">arrow_back</span>
-            </button>
+            <button className="btn btn-ghost btn-sm" onClick={()=>setMode(items.length?'review':null)}><span className="material-icons-round">arrow_back</span></button>
             <h3>Search Food</h3>
           </div>
-          <div className="search-box">
-            <span className="material-icons-round">search</span>
-            <input value={searchQ} onChange={e=>setSearchQ(e.target.value)} placeholder="Search Indian foods..." autoFocus />
-          </div>
-          <div className="tab-pills">
-            {categories.map(c=>(
-              <button key={c} className={`tab-pill ${searchCat===c?'active':''}`} onClick={()=>setSearchCat(c)}>{c}</button>
-            ))}
-          </div>
+          <div className="search-box"><span className="material-icons-round">search</span><input value={searchQ} onChange={e=>setSearchQ(e.target.value)} placeholder="Search Indian foods..." autoFocus /></div>
+          <div className="tab-pills">{categories.map(c=><button key={c} className={`tab-pill ${searchCat===c?'active':''}`} onClick={()=>setSearchCat(c)}>{c}</button>)}</div>
           <div className="search-results">
             {filteredFoods.map((f,i)=>(
               <div key={i} className="search-result-item" onClick={()=>addFromSearch(f)}>
-                <div>
-                  <div className="name">{f.name}</div>
-                  <div className="meta">{f.serving} | P:{f.protein}g C:{f.carbs}g F:{f.fat}g</div>
-                </div>
+                <div><div className="name">{f.name}</div><div className="meta">{f.serving} | P:{f.protein}g C:{f.carbs}g F:{f.fat}g</div></div>
                 <div className="cal">{f.calories}</div>
               </div>
             ))}
@@ -927,8 +791,43 @@ function LogMealPage({ user, username, foods, showToast, setPage }) {
   );
 }
 
+function ItemsReview({ items, updateQty, removeItem, totalCal, onAddMore, onSave }) {
+  return (
+    <div style={{marginTop:16}}>
+      {items.map((it,i)=>(
+        <div key={i} className="meal-card bounce-in" style={{animationDelay:`${i*0.05}s`}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+            <div style={{flex:1}}>
+              <div style={{fontWeight:600,fontSize:14}}>{it.name}</div>
+              <div style={{fontSize:12,color:'var(--text3)'}}>{it.quantity||it.serving}</div>
+              <div style={{fontSize:11,color:'var(--text3)',marginTop:2}}>P:{Math.round((it.protein||0)*it.qty)}g C:{Math.round((it.carbs||0)*it.qty)}g F:{Math.round((it.fat||0)*it.qty)}g</div>
+            </div>
+            <div style={{display:'flex',alignItems:'center',gap:10}}>
+              <div className="qty-editor">
+                <button className="qty-btn" onClick={()=>updateQty(i,-0.5)}>-</button>
+                <span style={{fontWeight:600,minWidth:24,textAlign:'center'}}>{it.qty}</span>
+                <button className="qty-btn" onClick={()=>updateQty(i,0.5)}>+</button>
+              </div>
+              <span style={{fontWeight:700,color:'var(--accent)',minWidth:50,textAlign:'right'}}>{Math.round(it.calories*it.qty)}</span>
+              <button onClick={()=>removeItem(i)} style={{background:'none',border:'none',color:'var(--red)',cursor:'pointer'}}><span className="material-icons-round" style={{fontSize:20}}>close</span></button>
+            </div>
+          </div>
+        </div>
+      ))}
+      <div className="card" style={{background:'var(--bg)',textAlign:'center'}}>
+        <span style={{fontSize:13,color:'var(--text3)'}}>Total: </span>
+        <span style={{fontSize:24,fontWeight:900,color:'var(--accent)'}}>{Math.round(totalCal)} cal</span>
+      </div>
+      <div style={{display:'flex',gap:8,marginTop:8}}>
+        <button className="btn btn-ghost" style={{flex:1}} onClick={onAddMore}><span className="material-icons-round">add</span> Add More</button>
+        <button className="btn btn-accent" style={{flex:2}} onClick={onSave}><span className="material-icons-round">check</span> Save Meal</button>
+      </div>
+    </div>
+  );
+}
+
 // ==================== WEIGHT TRACKER ====================
-function WeightPage({ user, username, showToast }) {
+function WeightPage({ user, uid, showToast, reloadWeights, reloadProfile }) {
   const [weight, setWeight] = useState('');
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [analysis, setAnalysis] = useState('');
@@ -939,103 +838,56 @@ function WeightPage({ user, username, showToast }) {
   const weights = user.weights || {};
   const sortedDates = Object.keys(weights).sort();
   const p = user.profile;
-
   const currentWeight = getLatestWeight(user);
   const bmr = calcBMR(currentWeight, p.height, p.age, p.gender);
   const tdee = bmr * p.activityFactor;
   const dailyDeficit = (p.targetLossPerWeek * 7700) / 7;
   const budget = Math.round(tdee - dailyDeficit);
-
-  // Estimated weight trajectory
   const startWeight = p.startWeight || currentWeight;
-  const startDate = p.startDate || sortedDates[0] || today();
-  const daysSinceStart = Math.floor((new Date(today()) - new Date(startDate)) / 86400000);
+  const startDate = p.startDate || sortedDates[0] || todayStr();
+  const daysSinceStart = Math.floor((new Date(todayStr()) - new Date(startDate)) / 86400000);
   const estimatedWeight = startWeight - (p.targetLossPerWeek / 7) * daysSinceStart;
   const weightDiff = currentWeight - estimatedWeight;
 
-  const logWeight = () => {
+  const logWeight = async () => {
     if (!weight) return;
-    const db = getDB();
-    db.users[username].weights[today()] = parseFloat(weight);
-    db.users[username].profile.weight = parseFloat(weight);
-    saveDB(db);
+    await FS.saveWeight(uid, todayStr(), parseFloat(weight));
+    await FS.saveProfile(uid, { weight: parseFloat(weight) });
     showToast('Weight updated!');
     setWeight('');
+    reloadWeights();
+    reloadProfile();
   };
 
   const doAIAnalysis = async () => {
-    setAnalyzing(true);
-    setShowAnalysis(true);
+    setAnalyzing(true); setShowAnalysis(true);
     try {
       const weightData = sortedDates.map(d=>({date:d,weight:weights[d]}));
       const mealData = [];
       const meals = user.meals || {};
-      Object.keys(meals).sort().slice(-21).forEach(d => {
-        meals[d].forEach(m => {
-          mealData.push({ date:d, label:m.label, totalCal: m.items.reduce((a,i)=>a+i.calories*i.qty,0), items: m.items.map(i=>i.name).join(', ') });
-        });
-      });
-      const res = await fetch('/api/ai-analysis', {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ weightData, mealData, profile:p, tdee:Math.round(tdee), dailyBudget:budget })
-      });
+      Object.keys(meals).sort().slice(-21).forEach(d => { meals[d].forEach(m => { mealData.push({ date:d, label:m.label, totalCal: m.items.reduce((a,i)=>a+i.calories*i.qty,0), items: m.items.map(i=>i.name).join(', ') }); }); });
+      const res = await fetch('/api/ai-analysis', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ weightData, mealData, profile:p, tdee:Math.round(tdee), dailyBudget:budget }) });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       setAnalysis(data.analysis);
-    } catch(err) {
-      setAnalysis('Failed to get analysis: ' + err.message);
-    }
+    } catch(err) { setAnalysis('Failed: ' + err.message); }
     setAnalyzing(false);
   };
 
   useEffect(() => {
     if (!chartRef.current || sortedDates.length < 2) return;
     if (chartInstance.current) chartInstance.current.destroy();
-
-    const estimatedData = sortedDates.map(d => {
-      const days = Math.floor((new Date(d) - new Date(startDate)) / 86400000);
-      return startWeight - (p.targetLossPerWeek / 7) * days;
-    });
-
+    const estimatedData = sortedDates.map(d => { const days = Math.floor((new Date(d) - new Date(startDate)) / 86400000); return startWeight - (p.targetLossPerWeek / 7) * days; });
     chartInstance.current = new Chart(chartRef.current, {
       type: 'line',
       data: {
         labels: sortedDates.map(d => new Date(d+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short'})),
         datasets: [
-          {
-            label: 'Actual Weight',
-            data: sortedDates.map(d=>weights[d]),
-            borderColor: '#6c5ce7',
-            backgroundColor: 'rgba(108,92,231,0.1)',
-            fill: true,
-            tension: 0.4,
-            pointRadius: 4,
-            pointBackgroundColor: '#6c5ce7',
-            borderWidth: 2,
-          },
-          {
-            label: 'Estimated Weight',
-            data: estimatedData,
-            borderColor: '#00cec9',
-            borderDash: [5,5],
-            tension: 0.4,
-            pointRadius: 0,
-            borderWidth: 2,
-          }
+          { label:'Actual Weight', data:sortedDates.map(d=>weights[d]), borderColor:'#6c5ce7', backgroundColor:'rgba(108,92,231,0.1)', fill:true, tension:0.4, pointRadius:4, pointBackgroundColor:'#6c5ce7', borderWidth:2 },
+          { label:'Estimated Weight', data:estimatedData, borderColor:'#00cec9', borderDash:[5,5], tension:0.4, pointRadius:0, borderWidth:2 }
         ]
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { labels: { color:'#b2b2cc', font:{size:11} } },
-        },
-        scales: {
-          x: { ticks:{color:'#6c6c8a',font:{size:10},maxRotation:45}, grid:{color:'rgba(255,255,255,0.05)'} },
-          y: { ticks:{color:'#6c6c8a',font:{size:11}}, grid:{color:'rgba(255,255,255,0.05)'} }
-        }
-      }
+      options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{color:'#b2b2cc',font:{size:11}}}}, scales:{x:{ticks:{color:'#6c6c8a',font:{size:10},maxRotation:45},grid:{color:'rgba(255,255,255,0.05)'}},y:{ticks:{color:'#6c6c8a',font:{size:11}},grid:{color:'rgba(255,255,255,0.05)'}}} }
     });
     return () => { if(chartInstance.current) chartInstance.current.destroy(); };
   }, [sortedDates.length, weights]);
@@ -1043,227 +895,111 @@ function WeightPage({ user, username, showToast }) {
   return (
     <div className="container">
       <div className="header fade-in"><h1>Weight Tracker</h1></div>
-
-      {/* Current stats */}
       <div className="card fade-in">
         <div style={{display:'flex',justifyContent:'space-around',textAlign:'center'}}>
-          <div>
-            <div style={{fontSize:28,fontWeight:900,color:'var(--primary-light)'}}>{currentWeight}</div>
-            <div style={{fontSize:11,color:'var(--text3)'}}>Current (kg)</div>
-          </div>
+          <div><div style={{fontSize:28,fontWeight:900,color:'var(--primary-light)'}}>{currentWeight}</div><div style={{fontSize:11,color:'var(--text3)'}}>Current (kg)</div></div>
           <div style={{width:1,background:'var(--border)'}}></div>
-          <div>
-            <div style={{fontSize:28,fontWeight:900,color:'var(--accent)'}}>{estimatedWeight.toFixed(1)}</div>
-            <div style={{fontSize:11,color:'var(--text3)'}}>Target (kg)</div>
-          </div>
+          <div><div style={{fontSize:28,fontWeight:900,color:'var(--accent)'}}>{estimatedWeight.toFixed(1)}</div><div style={{fontSize:11,color:'var(--text3)'}}>Target (kg)</div></div>
           <div style={{width:1,background:'var(--border)'}}></div>
-          <div>
-            <div style={{fontSize:28,fontWeight:900,color:weightDiff>0.5?'var(--red)':'var(--green)'}}>
-              {weightDiff>0?'+':''}{weightDiff.toFixed(1)}
-            </div>
-            <div style={{fontSize:11,color:'var(--text3)'}}>Diff (kg)</div>
-          </div>
+          <div><div style={{fontSize:28,fontWeight:900,color:weightDiff>0.5?'var(--red)':'var(--green)'}}>{weightDiff>0?'+':''}{weightDiff.toFixed(1)}</div><div style={{fontSize:11,color:'var(--text3)'}}>Diff (kg)</div></div>
         </div>
-        {weightDiff > 0.5 && (
-          <div style={{marginTop:12,padding:8,borderRadius:8,background:'rgba(255,107,107,0.1)',textAlign:'center'}}>
-            <span className="badge badge-orange">External Variables Likely</span>
-          </div>
-        )}
+        {weightDiff > 0.5 && <div style={{marginTop:12,padding:8,borderRadius:8,background:'rgba(255,107,107,0.1)',textAlign:'center'}}><span className="badge badge-orange">External Variables Likely</span></div>}
       </div>
-
-      {/* Log weight */}
       <div className="card fade-in" style={{animationDelay:'0.1s'}}>
         <h3 style={{fontSize:14,marginBottom:12}}>Log Weight</h3>
         <div style={{display:'flex',gap:8}}>
-          <input type="number" step="0.1" value={weight} onChange={e=>setWeight(e.target.value)}
-            placeholder="Today's weight (kg)" style={{flex:1,padding:'10px 14px',background:'var(--bg)',border:'1px solid var(--border)',borderRadius:10,color:'var(--text)',fontSize:15,outline:'none'}} />
+          <input type="number" step="0.1" value={weight} onChange={e=>setWeight(e.target.value)} placeholder="Today's weight (kg)" style={{flex:1,padding:'10px 14px',background:'var(--bg)',border:'1px solid var(--border)',borderRadius:10,color:'var(--text)',fontSize:15,outline:'none'}} />
           <button className="btn btn-primary btn-sm" onClick={logWeight}>Log</button>
         </div>
       </div>
-
-      {/* Progress */}
       <div className="card fade-in" style={{animationDelay:'0.15s'}}>
         <h3 style={{fontSize:14,marginBottom:8}}>Progress</h3>
-        <div style={{display:'flex',justifyContent:'space-between',fontSize:12,color:'var(--text3)'}}>
-          <span>Start: {startWeight}kg</span>
-          <span>Lost: {(startWeight - currentWeight).toFixed(1)}kg</span>
-        </div>
-        <div className="progress-bar">
-          <div className="progress-bar-fill" style={{
-            width: `${Math.min(100, Math.max(0, ((startWeight-currentWeight)/Math.max(1,startWeight-estimatedWeight))*100))}%`,
-            background: 'var(--gradient1)'
-          }}></div>
-        </div>
-        <p style={{fontSize:11,color:'var(--text3)',textAlign:'center'}}>
-          Goal: lose {p.targetLossPerWeek}kg/week | Budget: {budget} cal/day
-        </p>
+        <div style={{display:'flex',justifyContent:'space-between',fontSize:12,color:'var(--text3)'}}><span>Start: {startWeight}kg</span><span>Lost: {(startWeight - currentWeight).toFixed(1)}kg</span></div>
+        <div className="progress-bar"><div className="progress-bar-fill" style={{width:`${Math.min(100,Math.max(0,((startWeight-currentWeight)/Math.max(1,startWeight-estimatedWeight))*100))}%`,background:'var(--gradient1)'}}></div></div>
+        <p style={{fontSize:11,color:'var(--text3)',textAlign:'center'}}>Goal: lose {p.targetLossPerWeek}kg/week | Budget: {budget} cal/day</p>
       </div>
-
-      {/* Chart */}
-      {sortedDates.length >= 2 && (
-        <div className="card fade-in" style={{animationDelay:'0.2s'}}>
-          <h3 style={{fontSize:14,marginBottom:8}}>Weight History</h3>
-          <div className="chart-container">
-            <canvas ref={chartRef}></canvas>
-          </div>
+      {sortedDates.length >= 2 && <div className="card fade-in" style={{animationDelay:'0.2s'}}><h3 style={{fontSize:14,marginBottom:8}}>Weight History</h3><div className="chart-container"><canvas ref={chartRef}></canvas></div></div>}
+      <button className="btn btn-primary btn-full fade-in" style={{animationDelay:'0.3s',marginBottom:16}} onClick={doAIAnalysis}><span className="material-icons-round">auto_awesome</span> AI Analysis</button>
+      {showAnalysis && <div className="modal-overlay" onClick={()=>setShowAnalysis(false)}><div className="modal" onClick={e=>e.stopPropagation()}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
+          <h2 style={{margin:0}}>AI Analysis</h2>
+          <button onClick={()=>setShowAnalysis(false)} style={{background:'var(--bg3)',border:'none',borderRadius:50,width:32,height:32,color:'var(--text)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}><span className="material-icons-round" style={{fontSize:18}}>close</span></button>
         </div>
-      )}
-
-      {/* AI Analysis */}
-      <button className="btn btn-primary btn-full fade-in" style={{animationDelay:'0.3s',marginBottom:16}} onClick={doAIAnalysis}>
-        <span className="material-icons-round">auto_awesome</span> AI Analysis
-      </button>
-
-      {showAnalysis && (
-        <div className="modal-overlay" onClick={()=>setShowAnalysis(false)}>
-          <div className="modal" onClick={e=>e.stopPropagation()}>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
-              <h2 style={{margin:0}}>AI Analysis</h2>
-              <button onClick={()=>setShowAnalysis(false)} style={{background:'var(--bg3)',border:'none',borderRadius:50,width:32,height:32,color:'var(--text)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                <span className="material-icons-round" style={{fontSize:18}}>close</span>
-              </button>
-            </div>
-            {analyzing ? <div className="spinner"></div> : (
-              <div className="analysis-text">{analysis}</div>
-            )}
-          </div>
-        </div>
-      )}
+        {analyzing ? <div className="spinner"></div> : <div className="analysis-text">{analysis}</div>}
+      </div></div>}
     </div>
   );
 }
 
 // ==================== CALENDAR PAGE ====================
-function CalendarPage({ user, username, foods, showToast }) {
+function CalendarPage({ user, uid, foods, showToast }) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
-
   const year = currentMonth.getFullYear();
   const month = currentMonth.getMonth();
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month+1, 0).getDate();
   const monthName = currentMonth.toLocaleDateString('en-IN',{month:'long',year:'numeric'});
-
   const meals = user.meals || {};
   const p = user.profile;
-
-  const days = [];
-  for(let i=0;i<firstDay;i++) days.push(null);
-  for(let d=1;d<=daysInMonth;d++) days.push(d);
-
+  const days = []; for(let i=0;i<firstDay;i++) days.push(null); for(let d=1;d<=daysInMonth;d++) days.push(d);
   const getDateStr = (d) => `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-
-  const getDayCals = (d) => {
-    const dateStr = getDateStr(d);
-    const dayMeals = meals[dateStr] || [];
-    return dayMeals.reduce((s,m)=>s+m.items.reduce((a,i)=>a+i.calories*i.qty,0),0);
-  };
-
-  const prevMonth = () => setCurrentMonth(new Date(year,month-1,1));
-  const nextMonth = () => setCurrentMonth(new Date(year,month+1,1));
-
-  const todayStr = today();
+  const getDayCals = (d) => { const dayMeals = meals[getDateStr(d)] || []; return dayMeals.reduce((s,m)=>s+m.items.reduce((a,i)=>a+i.calories*i.qty,0),0); };
+  const currentW = getLatestWeight(user);
+  const bmr2 = calcBMR(currentW, p.height, p.age, p.gender);
+  const budget2 = Math.round(bmr2 * p.activityFactor - (p.targetLossPerWeek*7700/7));
 
   return (
     <div className="container">
       <div className="header fade-in"><h1>Calendar</h1></div>
-
       <div className="card fade-in">
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
-          <button className="btn btn-ghost btn-sm" onClick={prevMonth}>
-            <span className="material-icons-round">chevron_left</span>
-          </button>
+          <button className="btn btn-ghost btn-sm" onClick={()=>setCurrentMonth(new Date(year,month-1,1))}><span className="material-icons-round">chevron_left</span></button>
           <h3 style={{fontSize:16}}>{monthName}</h3>
-          <button className="btn btn-ghost btn-sm" onClick={nextMonth}>
-            <span className="material-icons-round">chevron_right</span>
-          </button>
+          <button className="btn btn-ghost btn-sm" onClick={()=>setCurrentMonth(new Date(year,month+1,1))}><span className="material-icons-round">chevron_right</span></button>
         </div>
         <div className="calendar-grid">
-          {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>(
-            <div key={d} className="cal-header">{d}</div>
-          ))}
+          {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=><div key={d} className="cal-header">{d}</div>)}
           {days.map((d,i) => {
             if (!d) return <div key={i} className="cal-day empty"></div>;
             const dateStr = getDateStr(d);
             const cals = getDayCals(d);
             const hasData = cals > 0;
-            const currentW = getLatestWeight(user);
-            const bmr2 = calcBMR(currentW, p.height, p.age, p.gender);
-            const budget2 = Math.round(bmr2 * p.activityFactor - (p.targetLossPerWeek*7700/7));
-            const over = cals > budget2;
-            return (
-              <div key={i}
-                className={`cal-day ${dateStr===todayStr?'today':''} ${hasData?'has-data':''} ${over?'over-budget':''}`}
-                onClick={()=>hasData && setSelectedDate(dateStr)}
-              >
-                {d}
-              </div>
-            );
+            return <div key={i} className={`cal-day ${dateStr===todayStr()?'today':''} ${hasData?'has-data':''} ${cals>budget2?'over-budget':''}`} onClick={()=>hasData && setSelectedDate(dateStr)}>{d}</div>;
           })}
         </div>
       </div>
-
-      {selectedDate && (
-        <div className="modal-overlay" onClick={()=>setSelectedDate(null)}>
-          <div className="modal" onClick={e=>e.stopPropagation()}>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
-              <h2 style={{margin:0}}>{formatDate(selectedDate)}</h2>
-              <button onClick={()=>setSelectedDate(null)} style={{background:'var(--bg3)',border:'none',borderRadius:50,width:32,height:32,color:'var(--text)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                <span className="material-icons-round" style={{fontSize:18}}>close</span>
-              </button>
-            </div>
-            {user.weights && user.weights[selectedDate] && (
-              <p style={{fontSize:13,color:'var(--text3)',marginBottom:12}}>Weight: {user.weights[selectedDate]}kg</p>
-            )}
-            {(meals[selectedDate]||[]).map((meal,i)=>(
-              <div key={i} className="meal-card">
-                <div className="meal-card-header">
-                  <h3>{meal.label} <span style={{fontSize:11,color:'var(--text3)',fontWeight:400}}>{meal.time}</span></h3>
-                  <span style={{fontWeight:700,color:'var(--accent)'}}>
-                    {meal.items.reduce((a,it)=>a+it.calories*it.qty,0)} cal
-                  </span>
-                </div>
-                {meal.items.map((it,j)=>(
-                  <div key={j} className="meal-item-row">
-                    <span>{it.name} {it.qty>1?`x${it.qty}`:''}</span>
-                    <span style={{color:'var(--text3)'}}>{Math.round(it.calories*it.qty)} cal</span>
-                  </div>
-                ))}
-              </div>
-            ))}
-            {(!meals[selectedDate] || meals[selectedDate].length===0) && (
-              <p style={{color:'var(--text3)',textAlign:'center',padding:20}}>No meals logged this day</p>
-            )}
-            <div style={{marginTop:12,textAlign:'center'}}>
-              <span style={{fontSize:13,color:'var(--text3)'}}>Total: </span>
-              <span style={{fontSize:20,fontWeight:700,color:'var(--accent)'}}>
-                {(meals[selectedDate]||[]).reduce((s,m)=>s+m.items.reduce((a,i)=>a+i.calories*i.qty,0),0)} cal
-              </span>
-            </div>
-          </div>
+      {selectedDate && <div className="modal-overlay" onClick={()=>setSelectedDate(null)}><div className="modal" onClick={e=>e.stopPropagation()}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
+          <h2 style={{margin:0}}>{formatDate(selectedDate)}</h2>
+          <button onClick={()=>setSelectedDate(null)} style={{background:'var(--bg3)',border:'none',borderRadius:50,width:32,height:32,color:'var(--text)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}><span className="material-icons-round" style={{fontSize:18}}>close</span></button>
         </div>
-      )}
+        {user.weights && user.weights[selectedDate] && <p style={{fontSize:13,color:'var(--text3)',marginBottom:12}}>Weight: {user.weights[selectedDate]}kg</p>}
+        {(meals[selectedDate]||[]).map((meal,i)=>(
+          <div key={i} className="meal-card">
+            <div className="meal-card-header"><h3>{meal.label} <span style={{fontSize:11,color:'var(--text3)',fontWeight:400}}>{meal.time}</span></h3><span style={{fontWeight:700,color:'var(--accent)'}}>{meal.items.reduce((a,it)=>a+it.calories*it.qty,0)} cal</span></div>
+            {meal.items.map((it,j)=><div key={j} className="meal-item-row"><span>{it.name} {it.qty>1?`x${it.qty}`:''}</span><span style={{color:'var(--text3)'}}>{Math.round(it.calories*it.qty)} cal</span></div>)}
+          </div>
+        ))}
+        <div style={{marginTop:12,textAlign:'center'}}><span style={{color:'var(--text3)',fontSize:13}}>Total: </span><span style={{fontSize:20,fontWeight:700,color:'var(--accent)'}}>{(meals[selectedDate]||[]).reduce((s,m)=>s+m.items.reduce((a,i)=>a+i.calories*i.qty,0),0)} cal</span></div>
+      </div></div>}
     </div>
   );
 }
 
 // ==================== SETTINGS PAGE ====================
-function SettingsPage({ user, username, showToast, onLogout }) {
+function SettingsPage({ user, uid, showToast, onLogout, reloadProfile }) {
   const p = user.profile;
-  const [form, setForm] = useState({
-    height: p.height, weight: p.weight, age: p.age, gender: p.gender,
-    activityFactor: p.activityFactor, targetLossPerWeek: p.targetLossPerWeek
-  });
+  const [form, setForm] = useState({ height:p.height, weight:p.weight, age:p.age, gender:p.gender, activityFactor:p.activityFactor, targetLossPerWeek:p.targetLossPerWeek });
   const set = (k,v) => setForm({...form,[k]:v});
 
-  const save = () => {
-    const db = getDB();
-    db.users[username].profile = { ...db.users[username].profile, ...form,
-      height:parseFloat(form.height), weight:parseFloat(form.weight), age:parseInt(form.age),
+  const save = async () => {
+    await FS.saveProfile(uid, {
+      height:parseFloat(form.height), weight:parseFloat(form.weight), age:parseInt(form.age), gender:form.gender,
       activityFactor:parseFloat(form.activityFactor), targetLossPerWeek:parseFloat(form.targetLossPerWeek)
-    };
-    saveDB(db);
+    });
     showToast('Settings saved!');
+    reloadProfile();
   };
 
   const bmr = calcBMR(parseFloat(form.weight),parseFloat(form.height),parseInt(form.age),form.gender);
@@ -1273,173 +1009,95 @@ function SettingsPage({ user, username, showToast, onLogout }) {
   return (
     <div className="container">
       <div className="header fade-in"><h1>Settings</h1></div>
-
+      <div className="card fade-in" style={{display:'flex',alignItems:'center',gap:12,marginBottom:16}}>
+        <div className="avatar" style={{width:48,height:48,fontSize:20}}>
+          {user.name[0].toUpperCase()}
+        </div>
+        <div><div style={{fontWeight:600}}>{user.name}</div><div style={{fontSize:12,color:'var(--text3)'}}>@{uid}</div></div>
+      </div>
       <div className="card fade-in">
         <h3 style={{fontSize:16,marginBottom:16}}>Profile</h3>
         <div style={{display:'flex',gap:8}}>
-          <div className="input-group" style={{flex:1}}>
-            <label>Gender</label>
-            <select value={form.gender} onChange={e=>set('gender',e.target.value)}>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-            </select>
-          </div>
-          <div className="input-group" style={{flex:1}}>
-            <label>Age</label>
-            <input type="number" value={form.age} onChange={e=>set('age',e.target.value)} />
-          </div>
+          <div className="input-group" style={{flex:1}}><label>Gender</label><select value={form.gender} onChange={e=>set('gender',e.target.value)}><option value="male">Male</option><option value="female">Female</option></select></div>
+          <div className="input-group" style={{flex:1}}><label>Age</label><input type="number" value={form.age} onChange={e=>set('age',e.target.value)} /></div>
         </div>
         <div style={{display:'flex',gap:8}}>
-          <div className="input-group" style={{flex:1}}>
-            <label>Height (cm)</label>
-            <input type="number" value={form.height} onChange={e=>set('height',e.target.value)} />
-          </div>
-          <div className="input-group" style={{flex:1}}>
-            <label>Weight (kg)</label>
-            <input type="number" step="0.1" value={form.weight} onChange={e=>set('weight',e.target.value)} />
-          </div>
+          <div className="input-group" style={{flex:1}}><label>Height (cm)</label><input type="number" value={form.height} onChange={e=>set('height',e.target.value)} /></div>
+          <div className="input-group" style={{flex:1}}><label>Weight (kg)</label><input type="number" step="0.1" value={form.weight} onChange={e=>set('weight',e.target.value)} /></div>
         </div>
       </div>
-
       <div className="card fade-in" style={{animationDelay:'0.1s'}}>
         <h3 style={{fontSize:16,marginBottom:16}}>Goals</h3>
-        <div className="input-group">
-          <label>Activity Level <ActivityInfoBtn /></label>
-          <select value={form.activityFactor} onChange={e=>set('activityFactor',e.target.value)}>
-            {ACTIVITY_FACTORS.map(a=>(
-              <option key={a.value} value={a.value}>{a.label} ({a.value})</option>
-            ))}
-          </select>
-        </div>
-        <div className="input-group">
-          <label>Target Loss (kg/week)</label>
-          <select value={form.targetLossPerWeek} onChange={e=>set('targetLossPerWeek',e.target.value)}>
-            {[0.25,0.5,0.75,1,1.25,1.5,2,2.5,3].map(v=>(
-              <option key={v} value={v}>{v} kg/week</option>
-            ))}
-          </select>
-        </div>
+        <div className="input-group"><label>Activity Level <ActivityInfoBtn /></label><select value={form.activityFactor} onChange={e=>set('activityFactor',e.target.value)}>{ACTIVITY_FACTORS.map(a=><option key={a.value} value={a.value}>{a.label} ({a.value})</option>)}</select></div>
+        <div className="input-group"><label>Target Loss (kg/week)</label><select value={form.targetLossPerWeek} onChange={e=>set('targetLossPerWeek',e.target.value)}>{[0.25,0.5,0.75,1,1.25,1.5,2,2.5,3].map(v=><option key={v} value={v}>{v} kg/week</option>)}</select></div>
       </div>
-
       <div className="card fade-in" style={{animationDelay:'0.15s',background:'var(--bg)',textAlign:'center'}}>
         <p style={{fontSize:13,color:'var(--text3)'}}>BMR: {Math.round(bmr)} | TDEE: {Math.round(tdee)}</p>
         <p style={{fontSize:24,fontWeight:900,color:'var(--accent)',marginTop:4}}>Budget: {budget} cal/day</p>
         <p style={{fontSize:12,color:'var(--text3)',marginTop:4}}>Deficit: {Math.round(parseFloat(form.targetLossPerWeek)*7700/7)} cal/day</p>
       </div>
-
-      <button className="btn btn-primary btn-full fade-in" style={{animationDelay:'0.2s',marginBottom:12}} onClick={save}>
-        <span className="material-icons-round">save</span> Save Settings
-      </button>
-      <button className="btn btn-ghost btn-full fade-in" style={{animationDelay:'0.25s',marginBottom:12}} onClick={onLogout}>
-        <span className="material-icons-round">logout</span> Switch Profile
-      </button>
+      <button className="btn btn-primary btn-full fade-in" style={{animationDelay:'0.2s',marginBottom:12}} onClick={save}><span className="material-icons-round">save</span> Save Settings</button>
+      <button className="btn btn-danger btn-full fade-in" style={{animationDelay:'0.25s',marginBottom:12}} onClick={onLogout}><span className="material-icons-round">logout</span> Logout</button>
     </div>
   );
 }
 
 // ==================== MEAL DETAIL MODAL ====================
-function MealDetailModal({ user, username, date, mealIndex, foods, showToast, onClose }) {
+function MealDetailModal({ user, uid, date, mealIndex, foods, showToast, onClose }) {
   const meal = user.meals[date][mealIndex];
   const [items, setItems] = useState(meal.items.map(i=>({...i})));
-  const [editing, setEditing] = useState(false);
-
-  const updateQty = (idx, delta) => {
-    const n = [...items];
-    n[idx].qty = Math.max(0.5, n[idx].qty + delta);
-    setItems(n);
-  };
+  const updateQty = (idx, delta) => { const n = [...items]; n[idx].qty = Math.max(0.5, n[idx].qty + delta); setItems(n); };
   const removeItem = (idx) => setItems(items.filter((_,i)=>i!==idx));
 
-  const save = () => {
-    const db = getDB();
-    db.users[username].meals[date][mealIndex].items = items;
-    saveDB(db);
+  const save = async () => {
+    const allMeals = [...(user.meals[date] || [])];
+    allMeals[mealIndex] = { ...allMeals[mealIndex], items };
+    await FS.saveMeals(uid, date, allMeals);
     showToast('Meal updated!');
     onClose();
   };
 
-  const deleteMeal = () => {
-    const db = getDB();
-    db.users[username].meals[date].splice(mealIndex, 1);
-    if (db.users[username].meals[date].length === 0) delete db.users[username].meals[date];
-    saveDB(db);
+  const deleteMeal = async () => {
+    const allMeals = [...(user.meals[date] || [])];
+    allMeals.splice(mealIndex, 1);
+    await FS.saveMeals(uid, date, allMeals);
     showToast('Meal deleted');
     onClose();
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={e=>e.stopPropagation()}>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
-          <h2 style={{margin:0}}>{meal.label}</h2>
-          <button onClick={onClose} style={{background:'var(--bg3)',border:'none',borderRadius:50,width:32,height:32,color:'var(--text)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>
-            <span className="material-icons-round" style={{fontSize:18}}>close</span>
-          </button>
-        </div>
-        {items.map((it,i)=>(
-          <div key={i} className="meal-card">
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-              <div>
-                <div style={{fontWeight:600,fontSize:14}}>{it.name}</div>
-                <div style={{fontSize:11,color:'var(--text3)'}}>
-                  P:{Math.round((it.protein||0)*it.qty)}g C:{Math.round((it.carbs||0)*it.qty)}g F:{Math.round((it.fat||0)*it.qty)}g
-                </div>
-              </div>
-              <div style={{display:'flex',alignItems:'center',gap:10}}>
-                <div className="qty-editor">
-                  <button className="qty-btn" onClick={()=>updateQty(i,-0.5)}>-</button>
-                  <span style={{fontWeight:600,minWidth:24,textAlign:'center'}}>{it.qty}</span>
-                  <button className="qty-btn" onClick={()=>updateQty(i,0.5)}>+</button>
-                </div>
-                <span style={{fontWeight:700,color:'var(--accent)'}}>{Math.round(it.calories*it.qty)}</span>
-                <button onClick={()=>removeItem(i)} style={{background:'none',border:'none',color:'var(--red)',cursor:'pointer'}}>
-                  <span className="material-icons-round" style={{fontSize:18}}>close</span>
-                </button>
-              </div>
+    <div className="modal-overlay" onClick={onClose}><div className="modal" onClick={e=>e.stopPropagation()}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
+        <h2 style={{margin:0}}>{meal.label}</h2>
+        <button onClick={onClose} style={{background:'var(--bg3)',border:'none',borderRadius:50,width:32,height:32,color:'var(--text)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}><span className="material-icons-round" style={{fontSize:18}}>close</span></button>
+      </div>
+      {items.map((it,i)=>(
+        <div key={i} className="meal-card">
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+            <div><div style={{fontWeight:600,fontSize:14}}>{it.name}</div><div style={{fontSize:11,color:'var(--text3)'}}>P:{Math.round((it.protein||0)*it.qty)}g C:{Math.round((it.carbs||0)*it.qty)}g F:{Math.round((it.fat||0)*it.qty)}g</div></div>
+            <div style={{display:'flex',alignItems:'center',gap:10}}>
+              <div className="qty-editor"><button className="qty-btn" onClick={()=>updateQty(i,-0.5)}>-</button><span style={{fontWeight:600,minWidth:24,textAlign:'center'}}>{it.qty}</span><button className="qty-btn" onClick={()=>updateQty(i,0.5)}>+</button></div>
+              <span style={{fontWeight:700,color:'var(--accent)'}}>{Math.round(it.calories*it.qty)}</span>
+              <button onClick={()=>removeItem(i)} style={{background:'none',border:'none',color:'var(--red)',cursor:'pointer'}}><span className="material-icons-round" style={{fontSize:18}}>close</span></button>
             </div>
           </div>
-        ))}
-        <div style={{textAlign:'center',margin:'12px 0'}}>
-          <span style={{color:'var(--text3)',fontSize:13}}>Total: </span>
-          <span style={{fontSize:20,fontWeight:700,color:'var(--accent)'}}>
-            {Math.round(items.reduce((a,i)=>a+i.calories*i.qty,0))} cal
-          </span>
         </div>
-        <div style={{display:'flex',gap:8}}>
-          <button className="btn btn-danger btn-sm" onClick={deleteMeal}>
-            <span className="material-icons-round" style={{fontSize:16}}>delete</span> Delete
-          </button>
-          <button className="btn btn-primary btn-full" onClick={save}>
-            <span className="material-icons-round" style={{fontSize:16}}>save</span> Save Changes
-          </button>
-        </div>
+      ))}
+      <div style={{textAlign:'center',margin:'12px 0'}}><span style={{color:'var(--text3)',fontSize:13}}>Total: </span><span style={{fontSize:20,fontWeight:700,color:'var(--accent)'}}>{Math.round(items.reduce((a,i)=>a+i.calories*i.qty,0))} cal</span></div>
+      <div style={{display:'flex',gap:8}}>
+        <button className="btn btn-danger btn-sm" onClick={deleteMeal}><span className="material-icons-round" style={{fontSize:16}}>delete</span> Delete</button>
+        <button className="btn btn-primary btn-full" onClick={save}><span className="material-icons-round" style={{fontSize:16}}>save</span> Save Changes</button>
       </div>
-    </div>
+    </div></div>
   );
 }
 
 // ==================== BOTTOM NAV ====================
 function BottomNav({ page, setPage }) {
-  const items = [
-    {id:'dashboard', icon:'home', label:'Home'},
-    {id:'log', icon:'add_circle', label:'Log Meal'},
-    {id:'weight', icon:'monitor_weight', label:'Weight'},
-    {id:'calendar', icon:'calendar_month', label:'Calendar'},
-    {id:'settings', icon:'settings', label:'Settings'},
-  ];
-  return (
-    <nav className="bottom-nav">
-      {items.map(it=>(
-        <button key={it.id} className={`nav-item ${page===it.id?'active':''}`} onClick={()=>setPage(it.id)}>
-          <span className="material-icons-round">{it.icon}</span>
-          {it.label}
-        </button>
-      ))}
-    </nav>
-  );
+  const items = [{id:'dashboard',icon:'home',label:'Home'},{id:'log',icon:'add_circle',label:'Log Meal'},{id:'weight',icon:'monitor_weight',label:'Weight'},{id:'calendar',icon:'calendar_month',label:'Calendar'},{id:'settings',icon:'settings',label:'Settings'}];
+  return <nav className="bottom-nav">{items.map(it=><button key={it.id} className={`nav-item ${page===it.id?'active':''}`} onClick={()=>setPage(it.id)}><span className="material-icons-round">{it.icon}</span>{it.label}</button>)}</nav>;
 }
 
-// ==================== HELPERS ====================
 function getLatestWeight(user) {
   const weights = user.weights || {};
   const dates = Object.keys(weights).sort();
@@ -1447,13 +1105,8 @@ function getLatestWeight(user) {
   return weights[dates[dates.length-1]];
 }
 
-// ==================== RENDER ====================
 ReactDOM.createRoot(document.getElementById('root')).render(<App />);
-
-// Register Service Worker
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').catch(() => {});
-}
+if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js').catch(() => {}); }
 </script>
 </body>
 </html>
