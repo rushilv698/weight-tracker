@@ -719,23 +719,47 @@ function LogMealPage({ user, uid, foods, showToast, setPage, reloadMeals }) {
   const [searchQ, setSearchQ] = useState('');
   const [searchCat, setSearchCat] = useState('All');
   const [analyzing, setAnalyzing] = useState(false);
+  const [customFoods, setCustomFoods] = useState([]);
+  const [customForm, setCustomForm] = useState({ name:'', calories:'', protein:'', carbs:'', fat:'', serving:'1 serving' });
   const fileRef = useRef();
   const cameraRef = useRef();
 
-  const categories = ['All', ...new Set(foods.map(f=>f.category))];
+  // Load user's custom foods
+  useEffect(() => {
+    db.collection('users').doc(uid).collection('data').doc('customFoods').get()
+      .then(doc => { if (doc.exists) setCustomFoods(doc.data().items || []); })
+      .catch(()=>{});
+  }, [uid]);
+
+  const allFoods = useMemo(() => {
+    const custom = customFoods.map(f => ({...f, category:'My Foods'}));
+    return [...custom, ...foods];
+  }, [foods, customFoods]);
+
+  const categories = ['All', 'My Foods', ...new Set(foods.map(f=>f.category))];
   const filteredFoods = useMemo(() => {
-    let f = foods;
+    let f = allFoods;
     if (searchCat !== 'All') f = f.filter(x=>x.category===searchCat);
-    if (searchQ) { const q = searchQ.toLowerCase(); f = f.filter(x=>x.name.toLowerCase().includes(q) || x.category.toLowerCase().includes(q)); }
+    if (searchQ) { const q = searchQ.toLowerCase(); f = f.filter(x=>x.name.toLowerCase().includes(q) || (x.category||'').toLowerCase().includes(q)); }
     return f.slice(0, 100);
-  }, [foods, searchQ, searchCat]);
+  }, [allFoods, searchQ, searchCat]);
 
   const handleImage = async (file) => {
     if (!file) return;
     setAnalyzing(true); setMode('analyzing');
     try {
-      const formData = new FormData(); formData.append('image', file);
-      const res = await fetch('/api/analyze-food', { method:'POST', body: formData });
+      // Convert to base64 and send as JSON (works on Vercel)
+      const reader = new FileReader();
+      const base64 = await new Promise((resolve, reject) => {
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      const res = await fetch('/api/analyze-food', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: base64 })
+      });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       setItems(data.items.map(it=>({...it, qty: 1})));
@@ -745,8 +769,29 @@ function LogMealPage({ user, uid, foods, showToast, setPage, reloadMeals }) {
   };
 
   const addFromSearch = (food) => {
-    setItems([...items, { name: food.name, quantity: food.serving, calories: food.calories, protein: food.protein, carbs: food.carbs, fat: food.fat, fiber: food.fiber||0, qty: 1 }]);
+    setItems([...items, { name: food.name, quantity: food.serving, calories: food.calories, protein: food.protein||0, carbs: food.carbs||0, fat: food.fat||0, fiber: food.fiber||0, qty: 1 }]);
     showToast(`Added ${food.name}`);
+  };
+
+  const saveCustomFood = async () => {
+    if (!customForm.name || !customForm.calories) { showToast('Name and calories required','error'); return; }
+    const newFood = {
+      name: customForm.name,
+      serving: customForm.serving || '1 serving',
+      calories: parseInt(customForm.calories),
+      protein: parseFloat(customForm.protein) || 0,
+      carbs: parseFloat(customForm.carbs) || 0,
+      fat: parseFloat(customForm.fat) || 0,
+      fiber: 0,
+      category: 'My Foods'
+    };
+    const updated = [...customFoods, newFood];
+    await db.collection('users').doc(uid).collection('data').doc('customFoods').set({ items: updated });
+    setCustomFoods(updated);
+    addFromSearch(newFood);
+    setCustomForm({ name:'', calories:'', protein:'', carbs:'', fat:'', serving:'1 serving' });
+    setMode(items.length > 0 ? 'review' : null);
+    showToast('Custom food saved!');
   };
 
   const removeItem = (idx) => setItems(items.filter((_,i)=>i!==idx));
@@ -787,11 +832,34 @@ function LogMealPage({ user, uid, foods, showToast, setPage, reloadMeals }) {
             </div>
           </div>
           <div style={{textAlign:'center',margin:'12px 0',color:'var(--text3)',fontSize:13}}>or</div>
-          <button className="btn btn-ghost btn-full" onClick={()=>setMode('search')}><span className="material-icons-round">search</span> Search Food Database</button>
+          <div style={{display:'flex',gap:8,marginBottom:12}}>
+            <button className="btn btn-ghost" style={{flex:1}} onClick={()=>setMode('search')}><span className="material-icons-round">search</span> Search</button>
+            <button className="btn btn-primary" style={{flex:1}} onClick={()=>setMode('custom')}><span className="material-icons-round">add_circle</span> Custom</button>
+          </div>
           {items.length > 0 && <ItemsReview items={items} updateQty={updateQty} removeItem={removeItem} totalCal={totalCal} onAddMore={()=>setMode('search')} onSave={saveMeal} />}
         </div>
       )}
       {mode === 'analyzing' && <div style={{textAlign:'center',padding:48}} className="fade-in"><div className="spinner"></div><p style={{color:'var(--primary-light)',marginTop:16,fontWeight:600}}>Analyzing your food...</p><p style={{color:'var(--text3)',fontSize:13,marginTop:4}}>AI is identifying items & calories</p></div>}
+      {mode === 'custom' && (
+        <div className="fade-in">
+          <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:16}}>
+            <button className="btn btn-ghost btn-sm" onClick={()=>setMode(items.length?'review':null)}><span className="material-icons-round">arrow_back</span></button>
+            <h3>Add Custom Food</h3>
+          </div>
+          <p style={{fontSize:12,color:'var(--text3)',marginBottom:16}}>Add a custom item — it'll be saved to "My Foods" for quick access next time.</p>
+          <div className="input-group"><label>Food Name *</label><input value={customForm.name} onChange={e=>setCustomForm({...customForm,name:e.target.value})} placeholder="e.g. Zomato Butter Chicken Bowl" /></div>
+          <div className="input-group"><label>Serving Size</label><input value={customForm.serving} onChange={e=>setCustomForm({...customForm,serving:e.target.value})} placeholder="e.g. 1 bowl, 300g" /></div>
+          <div style={{display:'flex',gap:8}}>
+            <div className="input-group" style={{flex:1}}><label>Calories *</label><input type="number" value={customForm.calories} onChange={e=>setCustomForm({...customForm,calories:e.target.value})} placeholder="kcal" /></div>
+            <div className="input-group" style={{flex:1}}><label>Protein (g)</label><input type="number" value={customForm.protein} onChange={e=>setCustomForm({...customForm,protein:e.target.value})} placeholder="0" /></div>
+          </div>
+          <div style={{display:'flex',gap:8}}>
+            <div className="input-group" style={{flex:1}}><label>Carbs (g)</label><input type="number" value={customForm.carbs} onChange={e=>setCustomForm({...customForm,carbs:e.target.value})} placeholder="0" /></div>
+            <div className="input-group" style={{flex:1}}><label>Fat (g)</label><input type="number" value={customForm.fat} onChange={e=>setCustomForm({...customForm,fat:e.target.value})} placeholder="0" /></div>
+          </div>
+          <button className="btn btn-accent btn-full" onClick={saveCustomFood}><span className="material-icons-round">save</span> Save & Add</button>
+        </div>
+      )}
       {mode === 'review' && (
         <div className="fade-in">
           <h3 style={{marginBottom:4}}>AI Detected Items</h3>

@@ -3,7 +3,6 @@ const express = require('express');
 const multer = require('multer');
 const OpenAI = require('openai');
 const cors = require('cors');
-const fs = require('fs');
 const path = require('path');
 
 const app = express();
@@ -21,15 +20,22 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 app.post('/api/analyze-food', upload.single('image'), async (req, res) => {
   try {
     let imageData;
+    let mimeType = 'image/jpeg';
+
     if (req.file) {
       imageData = req.file.buffer.toString('base64');
+      mimeType = req.file.mimetype;
     } else if (req.body.image) {
+      // Handle base64 from client
       imageData = req.body.image.replace(/^data:image\/\w+;base64,/, '');
+      const match = req.body.image.match(/^data:(image\/\w+);base64,/);
+      if (match) mimeType = match[1];
+    } else if (req.body.imageBase64) {
+      imageData = req.body.imageBase64;
+      mimeType = req.body.mimeType || 'image/jpeg';
     } else {
       return res.status(400).json({ error: 'No image provided' });
     }
-
-    const mimeType = req.file ? req.file.mimetype : 'image/jpeg';
 
     const response = await openai.chat.completions.create({
       model: 'gpt-4o',
@@ -60,7 +66,6 @@ Be as accurate as possible with portion sizes visible in the image. Return ONLY 
     });
 
     let content = response.choices[0].message.content.trim();
-    // Strip markdown code blocks if present
     content = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     const items = JSON.parse(content);
     res.json({ items });
@@ -122,7 +127,6 @@ app.get('*', (req, res) => {
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`\n🍽️  Calorie Tracker running at:`);
   console.log(`   Local:   http://localhost:${PORT}`);
-  // Show network IP for mobile access
   const nets = require('os').networkInterfaces();
   for (const name of Object.keys(nets)) {
     for (const net of nets[name]) {
