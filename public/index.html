@@ -69,6 +69,15 @@ input,select,textarea,button { font-family:inherit; }
 @keyframes progressFill { from{width:0} }
 @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
 @keyframes ringDraw { from{stroke-dashoffset:534} }
+/* Pixel grid loader */
+.pixel-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; width:60px; }
+.pixel { width:16px; height:16px; border-radius:4px; background:rgba(108,92,231,0.2); animation:pixelWave 1.2s ease-in-out infinite; }
+@keyframes pixelWave { 0%,100%{background:rgba(108,92,231,0.15);transform:scale(0.9)} 50%{background:rgba(0,206,201,0.7);transform:scale(1)} }
+.pixel:nth-child(1){animation-delay:0s}.pixel:nth-child(2){animation-delay:0.08s}.pixel:nth-child(3){animation-delay:0.16s}
+.pixel:nth-child(4){animation-delay:0.08s}.pixel:nth-child(5){animation-delay:0.16s}.pixel:nth-child(6){animation-delay:0.24s}
+.pixel:nth-child(7){animation-delay:0.16s}.pixel:nth-child(8){animation-delay:0.24s}.pixel:nth-child(9){animation-delay:0.32s}
+@keyframes ringGlow { 0%,100%{filter:drop-shadow(0 0 6px rgba(0,206,201,0.3))} 50%{filter:drop-shadow(0 0 14px rgba(0,206,201,0.5))} }
+@keyframes ringPulse { 0%,100%{opacity:0.5} 50%{opacity:0.8} }
 @keyframes scaleIn { from{opacity:0;transform:scale(0.9)} to{opacity:1;transform:scale(1)} }
 @keyframes slideInBottom { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
 @keyframes ripple { to{transform:scale(4);opacity:0} }
@@ -130,26 +139,26 @@ input,select,textarea,button { font-family:inherit; }
 .nav-item .material-icons-round { font-size:24px; transition:all 0.2s cubic-bezier(0.34,1.56,0.64,1); }
 
 /* === HEADER === */
-.header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding:8px 0; }
-.header h1 { font-size:24px; font-weight:800; background:var(--gradient1); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding:12px 0 8px; position:sticky; top:0; z-index:50; background:var(--bg); }
+.header h1 { font-size:24px; font-weight:800; }
 .header-right { display:flex; align-items:center; gap:12px; }
 .avatar { width:36px; height:36px; border-radius:50%; background:var(--gradient1); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; cursor:pointer; overflow:hidden; border:2px solid rgba(255,255,255,0.1); }
 .avatar img { width:100%; height:100%; object-fit:cover; }
 
 /* === CALORIE RING === */
 .calorie-ring-container { text-align:center; padding:24px 0; }
-.calorie-ring { position:relative; width:200px; height:200px; margin:0 auto; }
+.calorie-ring { position:relative; width:200px; height:200px; margin:0 auto; animation:ringGlow 3s ease-in-out infinite; }
 .calorie-ring svg { transform:rotate(-90deg); width:100%; height:100%; }
 .calorie-ring-text { position:absolute; top:0; left:0; right:0; bottom:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
-.calorie-ring-text .remaining { font-size:36px; font-weight:900; animation:countUp 0.8s ease; }
-.calorie-ring-text .label { font-size:12px; color:var(--text3); margin-top:4px; }
+.calorie-ring-text .remaining { font-size:38px; font-weight:900; letter-spacing:-1px; }
+.calorie-ring-text .label { font-size:12px; color:var(--text3); margin-top:4px; font-weight:500; }
 
 /* === MACROS — glass pills === */
-.macro-row { display:flex; gap:8px; justify-content:center; margin-top:16px; flex-wrap:wrap; }
-.macro-pill { background:rgba(18,18,26,0.6); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); border-radius:12px; padding:10px 16px; text-align:center; flex:1; min-width:70px; border:1px solid var(--glass-border); transition:all 0.2s ease; }
+.macro-row { display:flex; gap:10px; justify-content:center; margin-top:16px; flex-wrap:wrap; }
+.macro-pill { background:rgba(255,255,255,0.04); border-radius:14px; padding:12px 16px; text-align:center; flex:1; min-width:70px; border:1px solid rgba(255,255,255,0.06); transition:all 0.2s ease; }
 .macro-pill:active { transform:scale(0.96); }
-.macro-pill .value { font-size:16px; font-weight:700; transition:all 0.3s ease; }
-.macro-pill .label { font-size:10px; color:var(--text3); margin-top:2px; }
+.macro-pill .value { font-size:17px; font-weight:800; transition:all 0.3s ease; letter-spacing:-0.3px; }
+.macro-pill .label { font-size:10px; color:var(--text3); margin-top:3px; font-weight:500; text-transform:uppercase; letter-spacing:0.3px; }
 
 /* === MEAL CARDS === */
 .meal-card { background:rgba(18,18,26,0.6); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); border-radius:12px; padding:14px; margin-bottom:10px; border:1px solid var(--glass-border); animation:fadeIn 0.3s ease forwards; transition:all 0.2s ease; }
@@ -187,6 +196,7 @@ input,select,textarea,button { font-family:inherit; }
 .cal-day:hover { background:rgba(255,255,255,0.04); }
 .cal-day:active { transform:scale(0.88); }
 .cal-day.today { border:2px solid var(--primary); box-shadow:0 0 12px rgba(108,92,231,0.3); }
+.cal-day.selected { background:var(--primary); color:#fff; }
 .cal-day.has-data { background:rgba(52,211,153,0.08); }
 .cal-day.has-data::after { content:''; position:absolute; bottom:4px; width:5px; height:5px; border-radius:50%; background:var(--green); box-shadow:0 0 6px rgba(52,211,153,0.4); }
 .cal-day.over-budget { background:rgba(239,68,68,0.08); }
@@ -278,10 +288,82 @@ input,select,textarea,button { font-family:inherit; }
 .db-match.verified { background:rgba(52,211,153,0.12); color:#34d399; }
 .db-match.estimated { background:rgba(251,191,36,0.12); color:#fbbf24; }
 
+/* === INSIGHT CARDS === */
+.insight-scroll { display:flex; gap:10px; overflow-x:auto; padding-bottom:8px; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; }
+.insight-scroll::-webkit-scrollbar { display:none; }
+.insight-card { flex:0 0 auto; width:140px; scroll-snap-align:start; background:rgba(255,255,255,0.03); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); border:1px solid var(--glass-border); border-radius:14px; padding:14px; position:relative; overflow:hidden; }
+.insight-card .insight-label { font-size:10px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px; }
+.insight-card .insight-value { font-size:22px; font-weight:800; margin-bottom:2px; }
+.insight-card .insight-sub { font-size:11px; color:var(--text3); }
+.insight-card .insight-change { font-size:11px; font-weight:600; display:inline-flex; align-items:center; gap:2px; padding:2px 6px; border-radius:8px; margin-top:6px; }
+.insight-card .insight-change.up { background:rgba(239,68,68,0.1); color:#ef4444; }
+.insight-card .insight-change.down { background:rgba(52,211,153,0.1); color:#34d399; }
+.insight-sparkline { position:absolute; bottom:0; left:0; right:0; height:32px; opacity:0.25; }
+
+/* === CONFIDENCE METER === */
+.confidence-bar { height:4px; border-radius:2px; background:rgba(255,255,255,0.06); overflow:hidden; margin:8px 0; }
+.confidence-fill { height:100%; border-radius:2px; transition:width 0.6s ease; }
+.confidence-high { background:linear-gradient(90deg, #34d399, #22d3ee); }
+.confidence-mid { background:linear-gradient(90deg, #fbbf24, #fb923c); }
+.confidence-low { background:linear-gradient(90deg, #ef4444, #fb7185); }
+
+/* === MEAL STATUS ROWS === */
+.meal-status-row { display:flex; align-items:center; gap:12px; padding:12px 14px; margin-bottom:8px; border-radius:12px; background:rgba(255,255,255,0.02); border:1px solid var(--glass-border); transition:all 0.15s ease; animation:fadeIn 0.3s ease forwards; }
+.meal-status-row:active { transform:scale(0.98); background:rgba(255,255,255,0.04); }
+.meal-status-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.meal-status-icon.ok { background:rgba(52,211,153,0.12); color:#34d399; }
+.meal-status-icon.warn { background:rgba(251,191,36,0.12); color:#fbbf24; }
+.meal-status-icon.over { background:rgba(239,68,68,0.12); color:#ef4444; }
+.meal-status-info { flex:1; min-width:0; }
+.meal-status-info .meal-name { font-size:14px; font-weight:600; }
+.meal-status-info .meal-items-preview { font-size:11px; color:var(--text3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:1px; }
+.meal-status-cal { font-size:15px; font-weight:700; color:var(--accent); flex-shrink:0; }
+
+/* === RECENT/POPULAR SUGGESTIONS === */
+.suggest-section { margin-bottom:20px; }
+.suggest-section h4 { font-size:11px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+.suggest-chips { display:flex; flex-wrap:wrap; gap:6px; }
+.suggest-chip { padding:6px 12px; border-radius:20px; font-size:12px; font-weight:500; background:rgba(255,255,255,0.04); border:1px solid var(--glass-border); color:var(--text2); cursor:pointer; transition:all 0.15s; white-space:nowrap; }
+.suggest-chip:active { transform:scale(0.95); background:rgba(108,92,231,0.15); border-color:rgba(108,92,231,0.3); color:var(--primary-light); }
+
+/* === ELAPSED TIMER === */
+.elapsed-timer { display:inline-flex; align-items:center; gap:4px; font-size:12px; color:var(--text3); font-variant-numeric:tabular-nums; }
+.elapsed-dot { width:6px; height:6px; border-radius:50%; background:var(--primary-light); animation:pulse 1.5s ease-in-out infinite; }
+
+/* === FILTER CHIPS BAR === */
+.filter-bar { display:flex; gap:6px; overflow-x:auto; padding-bottom:8px; margin-bottom:12px; }
+.filter-bar::-webkit-scrollbar { display:none; }
+.filter-chip { padding:6px 14px; border-radius:20px; font-size:12px; font-weight:600; border:1px solid var(--glass-border); background:rgba(255,255,255,0.02); color:var(--text3); cursor:pointer; white-space:nowrap; transition:all 0.15s; display:flex; align-items:center; gap:5px; }
+.filter-chip:active { transform:scale(0.95); }
+.filter-chip.active { background:rgba(108,92,231,0.15); border-color:rgba(108,92,231,0.3); color:var(--primary-light); }
+.filter-chip .filter-dot { width:6px; height:6px; border-radius:50%; }
+
+/* === INSPECTOR ROW (Settings) === */
+.inspector-card { background:rgba(255,255,255,0.02); border:1px solid var(--glass-border); border-radius:14px; overflow:hidden; }
+.inspector-row { display:flex; justify-content:space-between; align-items:center; padding:14px 16px; border-bottom:1px solid rgba(255,255,255,0.04); transition:background 0.15s; }
+.inspector-row:last-child { border-bottom:none; }
+.inspector-row:active { background:rgba(255,255,255,0.03); }
+.inspector-label { font-size:13px; color:var(--text2); font-weight:500; }
+.inspector-header { display:flex; align-items:center; gap:8px; padding:12px 16px; font-size:12px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px; border-bottom:1px solid rgba(255,255,255,0.04); }
+.inspector-card { margin-bottom:12px; }
+.inspector-value { font-size:14px; font-weight:600; color:var(--text); display:flex; align-items:center; gap:6px; }
+.inspector-value .material-icons-round { font-size:14px; color:var(--text3); }
+
+/* === WEIGHT STATUS CHIP === */
+.weight-chip { display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:10px; font-size:10px; font-weight:600; }
+.weight-chip.on-track { background:rgba(52,211,153,0.12); color:#34d399; }
+.weight-chip.plateau { background:rgba(251,191,36,0.12); color:#fbbf24; }
+.weight-chip.gaining { background:rgba(239,68,68,0.12); color:#ef4444; }
+
+/* === TOAST UPGRADE === */
+.toast { position:fixed; top:20px; left:50%; transform:translateX(-50%); background:rgba(22,22,42,0.92); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid var(--glass-border); padding:12px 20px; border-radius:12px; z-index:300; animation:slideDown 0.3s ease; font-size:14px; display:flex; align-items:center; gap:8px; box-shadow:0 8px 32px rgba(0,0,0,0.3); border-left:3px solid var(--green); }
+
 @media (max-width: 480px) {
   .container { padding:12px; padding-bottom:85px; }
   .calorie-ring { width:180px; height:180px; }
   .calorie-ring-text .remaining { font-size:30px; }
+  .insight-card { width:130px; padding:12px; }
+  .insight-card .insight-value { font-size:20px; }
 }
 </style>
 </head>
@@ -355,6 +437,67 @@ window.FS = {
   },
   async saveWeights(uid, entries) {
     await db.collection('users').doc(uid).collection('data').doc('weights').set({ entries }, { merge: true });
+  },
+
+  // Friend requests
+  async sendFriendRequest(fromUid, toUid) {
+    // Check user exists
+    const toDoc = await db.collection('users').doc(toUid).get();
+    if (!toDoc.exists) return { error: 'User not found.' };
+    if (fromUid === toUid) return { error: "That's you!" };
+    // Check not already friends
+    const fromDoc = await db.collection('users').doc(fromUid).get();
+    const friends = fromDoc.data().friends || [];
+    if (friends.includes(toUid)) return { error: 'Already friends!' };
+    // Check no pending request exists
+    const existing = await db.collection('friendRequests')
+      .where('from', '==', fromUid).where('to', '==', toUid).where('status', '==', 'pending').get();
+    if (!existing.empty) return { error: 'Request already sent.' };
+    // Also check reverse
+    const reverse = await db.collection('friendRequests')
+      .where('from', '==', toUid).where('to', '==', fromUid).where('status', '==', 'pending').get();
+    if (!reverse.empty) return { error: 'They already sent you a request! Check incoming.' };
+    await db.collection('friendRequests').add({ from: fromUid, to: toUid, status: 'pending', createdAt: new Date().toISOString() });
+    return { success: true };
+  },
+  async getIncomingRequests(uid) {
+    const snap = await db.collection('friendRequests').where('to', '==', uid).where('status', '==', 'pending').get();
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  },
+  async getOutgoingRequests(uid) {
+    const snap = await db.collection('friendRequests').where('from', '==', uid).where('status', '==', 'pending').get();
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  },
+  async acceptFriendRequest(requestId, fromUid, toUid) {
+    await db.collection('friendRequests').doc(requestId).update({ status: 'accepted' });
+    // Add to both users' friends arrays
+    const fromDoc = await db.collection('users').doc(fromUid).get();
+    const toDoc = await db.collection('users').doc(toUid).get();
+    const fromFriends = fromDoc.data().friends || [];
+    const toFriends = toDoc.data().friends || [];
+    if (!fromFriends.includes(toUid)) fromFriends.push(toUid);
+    if (!toFriends.includes(fromUid)) toFriends.push(fromUid);
+    await db.collection('users').doc(fromUid).set({ friends: fromFriends }, { merge: true });
+    await db.collection('users').doc(toUid).set({ friends: toFriends }, { merge: true });
+  },
+  async rejectFriendRequest(requestId) {
+    await db.collection('friendRequests').doc(requestId).update({ status: 'rejected' });
+  },
+  async getFriends(uid) {
+    const doc = await db.collection('users').doc(uid).get();
+    return doc.exists ? (doc.data().friends || []) : [];
+  },
+  async getFriendData(friendUid) {
+    const profile = await db.collection('users').doc(friendUid).get();
+    const weights = await db.collection('users').doc(friendUid).collection('data').doc('weights').get();
+    const mealsSnap = await db.collection('users').doc(friendUid).collection('meals').get();
+    const meals = {};
+    mealsSnap.forEach(doc => { meals[doc.id] = doc.data().meals || []; });
+    return {
+      profile: profile.exists ? profile.data() : null,
+      weights: weights.exists ? (weights.data().entries || {}) : {},
+      meals
+    };
   }
 };
 </script>
@@ -413,6 +556,7 @@ function App() {
   const [weights, setWeights] = useState({});
   const [page, setPage] = useState('dashboard');
   const [toast, setToast] = useState(null);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [foods, setFoods] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -467,7 +611,20 @@ function App() {
   };
 
   if (loading) {
-    return <div className="login-page"><div className="spinner"></div><p style={{color:'var(--text3)',marginTop:16}}>Loading...</p></div>;
+    return (
+      <div className="login-page" style={{flexDirection:'column',gap:24}}>
+        {/* Pixel grid loader */}
+        <div className="pixel-grid">
+          {[...Array(9)].map((_,i) => <div key={i} className="pixel" style={{animationDelay:`${i*0.08}s`}} />)}
+        </div>
+        <div style={{textAlign:'center'}}>
+          <h1 style={{fontSize:28,fontWeight:900,margin:0,letterSpacing:-0.5}}>
+            <span style={{color:'#fff'}}>Cal</span><span style={{background:'linear-gradient(135deg,#00cec9,#6c5ce7,#a29bfe)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>Track</span>
+          </h1>
+          <p style={{color:'var(--text3)',marginTop:10,fontSize:13}}>Loading your data...</p>
+        </div>
+      </div>
+    );
   }
 
   if (!uid) {
@@ -480,15 +637,37 @@ function App() {
 
   const user = { profile, meals, weights, name: profile.name || uid };
 
+  const profileBtn = <div className="avatar" onClick={()=>setShowProfileMenu(!showProfileMenu)} style={{width:34,height:34,fontSize:14,cursor:'pointer',boxShadow:'0 2px 8px rgba(0,0,0,0.2)'}}>{user.name[0].toUpperCase()}</div>;
+
   const pages = {
-    dashboard: <DashboardPage user={user} uid={uid} foods={foods} showToast={showToast} reloadMeals={reloadMeals} reloadWeights={reloadWeights} />,
-    log: <LogMealPage user={user} uid={uid} foods={foods} showToast={showToast} setPage={setPage} reloadMeals={reloadMeals} />,
-    weight: <WeightPage user={user} uid={uid} showToast={showToast} reloadWeights={reloadWeights} reloadProfile={reloadProfile} />,
-    calendar: <CalendarPage user={user} uid={uid} foods={foods} showToast={showToast} />,
-    settings: <SettingsPage user={user} uid={uid} showToast={showToast} onLogout={logout} reloadProfile={reloadProfile} />,
+    dashboard: <DashboardPage user={user} uid={uid} foods={foods} showToast={showToast} reloadMeals={reloadMeals} reloadWeights={reloadWeights} setPage={setPage} profileBtn={profileBtn} />,
+    log: <LogMealPage user={user} uid={uid} foods={foods} showToast={showToast} setPage={setPage} reloadMeals={reloadMeals} profileBtn={profileBtn} />,
+    weight: <WeightPage user={user} uid={uid} showToast={showToast} reloadWeights={reloadWeights} reloadProfile={reloadProfile} profileBtn={profileBtn} />,
+    calendar: <CalendarPage user={user} uid={uid} foods={foods} showToast={showToast} profileBtn={profileBtn} />,
+    friends: <FriendsPage uid={uid} user={user} showToast={showToast} profileBtn={profileBtn} />,
+    settings: <SettingsPage user={user} uid={uid} showToast={showToast} onLogout={logout} reloadProfile={reloadProfile} setPage={setPage} />,
   };
 
-  return <div>{pages[page]}<BottomNav page={page} setPage={setPage} />{toast && <Toast {...toast} onClose={()=>setToast(null)} />}</div>;
+  return (
+    <div>
+      {/* Profile dropdown overlay */}
+      {showProfileMenu && <div style={{position:'fixed',top:0,left:0,right:0,bottom:0,zIndex:99}} onClick={()=>setShowProfileMenu(false)} />}
+      {showProfileMenu && (
+        <div style={{position:'fixed',top:58,right:16,zIndex:100,background:'rgba(22,22,42,0.98)',backdropFilter:'blur(16px)',WebkitBackdropFilter:'blur(16px)',border:'1px solid rgba(255,255,255,0.08)',borderRadius:14,padding:6,minWidth:180,boxShadow:'0 12px 40px rgba(0,0,0,0.5)',animation:'fadeIn 0.15s ease'}}>
+          <button onClick={()=>{setPage('settings');setShowProfileMenu(false);}} style={{display:'flex',alignItems:'center',gap:10,width:'100%',padding:'12px 14px',background:'none',border:'none',color:'var(--text)',fontSize:14,fontWeight:500,cursor:'pointer',borderRadius:10,transition:'background 0.15s'}}>
+            <span className="material-icons-round" style={{fontSize:18,color:'var(--primary-light)'}}>person</span> Profile Settings
+          </button>
+          <div style={{height:1,background:'rgba(255,255,255,0.06)',margin:'2px 8px'}}></div>
+          <button onClick={()=>{logout();setShowProfileMenu(false);}} style={{display:'flex',alignItems:'center',gap:10,width:'100%',padding:'12px 14px',background:'none',border:'none',color:'var(--red)',fontSize:14,fontWeight:500,cursor:'pointer',borderRadius:10,transition:'background 0.15s'}}>
+            <span className="material-icons-round" style={{fontSize:18}}>logout</span> Logout
+          </button>
+        </div>
+      )}
+      {pages[page]}
+      <BottomNav page={page} setPage={setPage} />
+      {toast && <Toast {...toast} onClose={()=>setToast(null)} />}
+    </div>
+  );
 }
 
 // ==================== AUTH PAGE ====================
@@ -675,9 +854,9 @@ function ActivityInfoBtn() {
 }
 
 // ==================== DASHBOARD ====================
-function DashboardPage({ user, uid, foods, showToast, reloadMeals, reloadWeights }) {
-  const [showMealModal, setShowMealModal] = useState(null);
-  const [refresh, setRefresh] = useState(0);
+function DashboardPage({ user, uid, foods, showToast, reloadMeals, reloadWeights, profileBtn }) {
+  const [expandedMeal, setExpandedMeal] = useState(null);
+  const [editItems, setEditItems] = useState(null);
   const p = user.profile;
   const todayMeals = user.meals[todayStr()] || [];
   const currentWeight = getLatestWeight(user);
@@ -695,65 +874,158 @@ function DashboardPage({ user, uid, foods, showToast, reloadMeals, reloadWeights
   const totalCarbs = todayMeals.reduce((s,m) => s+m.items.reduce((a,i) => a+(i.carbs||0)*i.qty, 0), 0);
   const totalFat = todayMeals.reduce((s,m) => s+m.items.reduce((a,i) => a+(i.fat||0)*i.qty, 0), 0);
 
-  const ringColor = remaining >= 0 ? 'var(--accent)' : 'var(--red)';
+  const ringOver = remaining < 0;
+  const ringGradId = 'ringGrad';
+  const ringTrackGradId = 'ringTrackGrad';
   const circumference = 2 * Math.PI * 85;
   const dashOffset = circumference * (1 - pct);
+
+  // Weekly stats for insight cards
+  const allMeals = user.meals || {};
+  const last7 = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const ds = d.toISOString().split('T')[0];
+    const dayMeals = allMeals[ds] || [];
+    const dayCal = dayMeals.reduce((s,m) => s + m.items.reduce((a,it) => a+it.calories*it.qty, 0), 0);
+    last7.push({ date: ds, cal: dayCal, logged: dayMeals.length > 0 });
+  }
+  const weekAvg = last7.filter(d=>d.logged).length > 0 ? Math.round(last7.filter(d=>d.logged).reduce((s,d)=>s+d.cal,0) / last7.filter(d=>d.logged).length) : 0;
+  const daysOnTrack = last7.filter(d => d.logged && d.cal <= budget).length;
+  const consistencyPct = Math.round((daysOnTrack / 7) * 100);
+  const consistencyLevel = consistencyPct >= 70 ? 'high' : consistencyPct >= 40 ? 'mid' : 'low';
+
+  // Weight change this week
+  const weights = user.weights || {};
+  const sortedWeightDates = Object.keys(weights).sort();
+  const latestW = sortedWeightDates.length ? weights[sortedWeightDates[sortedWeightDates.length-1]] : null;
+  const weekAgoIdx = sortedWeightDates.findIndex(d => d >= last7[0].date);
+  const weekAgoW = weekAgoIdx >= 0 ? weights[sortedWeightDates[weekAgoIdx]] : latestW;
+  const weekWeightChange = latestW && weekAgoW ? (latestW - weekAgoW) : 0;
 
   return (
     <div className="container">
       <div className="header fade-in">
-        <div><h1>CalTrack</h1><p style={{fontSize:12,color:'var(--text3)'}}>{formatDate(todayStr())}</p></div>
-        <div className="header-right">
-          <div className="avatar">{user.name[0].toUpperCase()}</div>
-        </div>
+        <div><h1><span style={{color:'#fff',WebkitTextFillColor:'#fff'}}>Cal</span><span style={{background:'linear-gradient(135deg,#00cec9,#6c5ce7,#a29bfe)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>Track</span></h1><p style={{fontSize:12,color:'var(--text3)'}}>{formatDate(todayStr())}</p></div>
+        {profileBtn}
       </div>
 
-      <div className="card fade-in" style={{animationDelay:'0.1s'}}>
+      {/* Calorie Ring */}
+      <div className="card fade-in" style={{animationDelay:'0.1s', background:'linear-gradient(145deg, rgba(30,28,60,0.85), rgba(18,16,40,0.9))', backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)', border:'1px solid rgba(162,155,254,0.18)', boxShadow:'0 0 1px rgba(162,155,254,0.4), 0 0 8px rgba(108,92,231,0.12), 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.07), inset 0 -1px 0 rgba(255,255,255,0.02)'}}>
         <div className="calorie-ring-container">
           <div className="calorie-ring">
             <svg width="200" height="200" viewBox="0 0 200 200">
-              <circle cx="100" cy="100" r="85" fill="none" stroke="var(--bg)" strokeWidth="12" />
-              <circle cx="100" cy="100" r="85" fill="none" stroke={ringColor} strokeWidth="12"
-                strokeDasharray={circumference} strokeDashoffset={dashOffset} strokeLinecap="round" style={{transition:'stroke-dashoffset 1.5s cubic-bezier(0.4,0,0.2,1)', animation:'ringDraw 1.5s ease forwards'}} />
+              <defs>
+                <linearGradient id={ringGradId} x1="0%" y1="0%" x2="100%" y2="100%">
+                  {ringOver
+                    ? [<stop key="a" offset="0%" stopColor="#ef4444"/>, <stop key="b" offset="100%" stopColor="#fb7185"/>]
+                    : [<stop key="a" offset="0%" stopColor="#00cec9"/>, <stop key="b" offset="50%" stopColor="#6c5ce7"/>, <stop key="c" offset="100%" stopColor="#a29bfe"/>]
+                  }
+                </linearGradient>
+                <linearGradient id={ringTrackGradId} x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="rgba(255,255,255,0.03)"/>
+                  <stop offset="100%" stopColor="rgba(108,92,231,0.06)"/>
+                </linearGradient>
+              </defs>
+              <circle cx="100" cy="100" r="85" fill="none" stroke={`url(#${ringTrackGradId})`} strokeWidth="10" />
+              <circle cx="100" cy="100" r="85" fill="none" stroke={`url(#${ringGradId})`} strokeWidth="12"
+                strokeDasharray={circumference} strokeDashoffset={dashOffset} strokeLinecap="round" style={{transition:'stroke-dashoffset 1.8s cubic-bezier(0.25,0.46,0.45,0.94)', animation:'ringDraw 1.8s ease forwards'}} />
             </svg>
             <div className="calorie-ring-text">
-              <div className="remaining" style={{color:ringColor}}>{Math.round(remaining)}</div>
+              <div className="remaining" style={{background:ringOver?'linear-gradient(135deg,#ef4444,#fb7185)':'linear-gradient(135deg,#00cec9,#a29bfe)', WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>{Math.round(remaining)}</div>
               <div className="label">calories left</div>
             </div>
           </div>
-          <div className="macro-row">
-            <div className="macro-pill scale-in" style={{animationDelay:'0.3s'}}><div className="value" style={{color:'var(--accent)'}}>{Math.round(consumed)}</div><div className="label">Eaten</div></div>
-            <div className="macro-pill scale-in" style={{animationDelay:'0.4s'}}><div className="value" style={{color:'var(--primary-light)'}}>{budget}</div><div className="label">Budget</div></div>
-            <div className="macro-pill scale-in" style={{animationDelay:'0.5s'}}><div className="value" style={{color:remaining>=0?'var(--green)':'var(--red)'}}>{Math.round(remaining)}</div><div className="label">Left</div></div>
+          <div className="macro-row" style={{marginTop:20}}>
+            <div className="macro-pill scale-in" style={{animationDelay:'0.3s'}}><div className="value" style={{background:'linear-gradient(135deg,#00cec9,#55efc4)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>{Math.round(consumed)}</div><div className="label">Eaten</div></div>
+            <div className="macro-pill scale-in" style={{animationDelay:'0.4s'}}><div className="value" style={{background:'linear-gradient(135deg,#a29bfe,#6c5ce7)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>{budget}</div><div className="label">Budget</div></div>
+            <div className="macro-pill scale-in" style={{animationDelay:'0.5s'}}><div className="value" style={{background:remaining>=0?'linear-gradient(135deg,#34d399,#22d3ee)':'linear-gradient(135deg,#ef4444,#fb7185)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>{Math.round(remaining)}</div><div className="label">Left</div></div>
           </div>
         </div>
       </div>
 
+      {/* Today's Macros */}
       <div className="card fade-in" style={{animationDelay:'0.2s'}}>
-        <h3 style={{fontSize:14,color:'var(--text3)',marginBottom:12}}>Today's Macros</h3>
+        <h3 style={{fontSize:13,color:'var(--text3)',marginBottom:12,fontWeight:600,textTransform:'uppercase',letterSpacing:'0.5px'}}>Today's Macros</h3>
         <div className="macro-row">
-          <div className="macro-pill scale-in" style={{animationDelay:'0.3s'}}><div className="value" style={{color:'#74b9ff'}}>{Math.round(totalProtein)}g</div><div className="label">Protein</div></div>
-          <div className="macro-pill scale-in" style={{animationDelay:'0.4s'}}><div className="value" style={{color:'var(--orange)'}}>{Math.round(totalCarbs)}g</div><div className="label">Carbs</div></div>
-          <div className="macro-pill scale-in" style={{animationDelay:'0.5s'}}><div className="value" style={{color:'var(--accent2)'}}>{Math.round(totalFat)}g</div><div className="label">Fat</div></div>
+          <div className="macro-pill scale-in" style={{animationDelay:'0.3s',background:'rgba(116,185,255,0.06)',borderColor:'rgba(116,185,255,0.12)'}}><div className="value" style={{color:'#74b9ff'}}>{Math.round(totalProtein)}g</div><div className="label">Protein</div></div>
+          <div className="macro-pill scale-in" style={{animationDelay:'0.4s',background:'rgba(251,191,36,0.06)',borderColor:'rgba(251,191,36,0.12)'}}><div className="value" style={{color:'#fbbf24'}}>{Math.round(totalCarbs)}g</div><div className="label">Carbs</div></div>
+          <div className="macro-pill scale-in" style={{animationDelay:'0.5s',background:'rgba(253,121,168,0.06)',borderColor:'rgba(253,121,168,0.12)'}}><div className="value" style={{color:'#fd79a8'}}>{Math.round(totalFat)}g</div><div className="label">Fat</div></div>
         </div>
       </div>
 
+      {/* Today's Meals — collapsible */}
       <div className="fade-in" style={{animationDelay:'0.3s'}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
           <h3 style={{fontSize:16,fontWeight:700}}>Today's Meals</h3>
-          <span className="badge badge-green">{todayMeals.length} logged</span>
+          <span className="chip chip-info">{todayMeals.length} logged</span>
         </div>
-        {todayMeals.map((meal,i) => (
-          <div key={i} className="meal-card" onClick={()=>setShowMealModal({date:todayStr(),index:i})}>
-            <div className="meal-card-header">
-              <h3>{meal.label || `Meal ${i+1}`}</h3>
-              <span style={{fontSize:15,fontWeight:700,color:'var(--accent)'}}>{meal.items.reduce((a,it)=>a+it.calories*it.qty,0)} cal</span>
+        {todayMeals.map((meal,i) => {
+          const mealCal = meal.items.reduce((a,it)=>a+it.calories*it.qty,0);
+          const preview = meal.items.map(it=>it.name).join(', ');
+          const isExpanded = expandedMeal === i;
+          const currentItems = isExpanded && editItems ? editItems : meal.items;
+
+          const toggleExpand = () => {
+            if (isExpanded) { setExpandedMeal(null); setEditItems(null); }
+            else { setExpandedMeal(i); setEditItems(meal.items.map(x=>({...x}))); }
+          };
+          const updateQty = (idx, delta) => { const n = [...currentItems]; n[idx] = {...n[idx], qty: Math.max(0.5, n[idx].qty + delta)}; setEditItems(n); };
+          const removeItem = (idx) => setEditItems(currentItems.filter((_,j)=>j!==idx));
+          const saveMeal = async () => {
+            const allMeals = [...(user.meals[todayStr()] || [])];
+            allMeals[i] = { ...allMeals[i], items: editItems };
+            await FS.saveMeals(uid, todayStr(), allMeals);
+            showToast('Meal updated!');
+            setExpandedMeal(null); setEditItems(null); reloadMeals();
+          };
+          const deleteMeal = async () => {
+            const allMeals = [...(user.meals[todayStr()] || [])];
+            allMeals.splice(i, 1);
+            await FS.saveMeals(uid, todayStr(), allMeals);
+            showToast('Meal deleted');
+            setExpandedMeal(null); setEditItems(null); reloadMeals();
+          };
+
+          return (
+            <div key={i} className="meal-collapse-card" style={{animationDelay:`${i*0.05}s`, marginBottom:8}}>
+              {/* Header row — tap to expand/collapse */}
+              <div className="meal-status-row" style={{cursor:'pointer',borderRadius: isExpanded ? '12px 12px 0 0' : 12}} onClick={toggleExpand}>
+                <div className="meal-status-info" style={{paddingLeft:4}}>
+                  <div className="meal-name">{meal.label || `Meal ${i+1}`}</div>
+                  {!isExpanded && <div className="meal-items-preview">{preview}</div>}
+                </div>
+                <div style={{display:'flex',alignItems:'center',gap:8}}>
+                  <div className="meal-status-cal">{mealCal}</div>
+                  <span className="material-icons-round" style={{fontSize:16,color:'var(--text3)',transition:'transform 0.2s',transform:isExpanded?'rotate(180deg)':'rotate(0)'}}>expand_more</span>
+                </div>
+              </div>
+
+              {/* Expanded detail — inline edit */}
+              {isExpanded && (
+                <div style={{padding:'0 12px 12px',background:'rgba(255,255,255,0.02)',borderRadius:'0 0 12px 12px',border:'1px solid var(--glass-border)',borderTop:'none',animation:'fadeIn 0.2s ease'}}>
+                  {currentItems.map((it,j) => (
+                    <div key={j} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'10px 0',borderBottom: j < currentItems.length-1 ? '1px solid rgba(255,255,255,0.04)' : 'none'}}>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{fontWeight:600,fontSize:13}}>{it.name}</div>
+                        <div style={{fontSize:11,color:'var(--text3)'}}>P:{Math.round((it.protein||0)*it.qty)}g C:{Math.round((it.carbs||0)*it.qty)}g F:{Math.round((it.fat||0)*it.qty)}g</div>
+                      </div>
+                      <div style={{display:'flex',alignItems:'center',gap:8,flexShrink:0}}>
+                        <div className="qty-editor"><button className="qty-btn" onClick={(e)=>{e.stopPropagation();updateQty(j,-0.5)}}>-</button><span style={{fontWeight:600,minWidth:20,textAlign:'center',fontSize:13}}>{it.qty}</span><button className="qty-btn" onClick={(e)=>{e.stopPropagation();updateQty(j,0.5)}}>+</button></div>
+                        <span style={{fontWeight:700,color:'var(--accent)',fontSize:13,minWidth:32,textAlign:'right'}}>{Math.round(it.calories*it.qty)}</span>
+                        <button onClick={(e)=>{e.stopPropagation();removeItem(j)}} style={{background:'none',border:'none',color:'var(--red)',cursor:'pointer',padding:2}}><span className="material-icons-round" style={{fontSize:16}}>close</span></button>
+                      </div>
+                    </div>
+                  ))}
+                  <div style={{display:'flex',gap:8,marginTop:10}}>
+                    <button className="btn btn-danger btn-sm" onClick={(e)=>{e.stopPropagation();deleteMeal()}}><span className="material-icons-round" style={{fontSize:14}}>delete</span> Delete</button>
+                    <button className="btn btn-primary btn-full btn-sm" onClick={(e)=>{e.stopPropagation();saveMeal()}}><span className="material-icons-round" style={{fontSize:14}}>save</span> Save</button>
+                  </div>
+                </div>
+              )}
             </div>
-            <div className="meal-items">
-              {meal.items.map((it,j)=><div key={j} className="meal-item-row"><span>{it.name} {it.qty>1?`x${it.qty}`:''}</span><span style={{color:'var(--text3)'}}>{it.calories*it.qty} cal</span></div>)}
-            </div>
-          </div>
-        ))}
+          );
+        })}
         {todayMeals.length === 0 && (
           <div className="fade-in" style={{textAlign:'center',padding:32,color:'var(--text3)'}}>
             <span className="material-icons-round float-anim" style={{fontSize:48,opacity:0.3,display:'inline-block'}}>restaurant</span>
@@ -763,8 +1035,6 @@ function DashboardPage({ user, uid, foods, showToast, reloadMeals, reloadWeights
       </div>
 
       <QuickWeightEntry user={user} uid={uid} showToast={showToast} reloadWeights={reloadWeights} />
-
-      {showMealModal && <MealDetailModal user={user} uid={uid} date={showMealModal.date} mealIndex={showMealModal.index} foods={foods} showToast={showToast} onClose={()=>{setShowMealModal(null);reloadMeals();}} />}
     </div>
   );
 }
@@ -796,7 +1066,7 @@ function QuickWeightEntry({ user, uid, showToast, reloadWeights }) {
 }
 
 // ==================== LOG MEAL PAGE ====================
-function LogMealPage({ user, uid, foods, showToast, setPage, reloadMeals }) {
+function LogMealPage({ user, uid, foods, showToast, setPage, reloadMeals, profileBtn }) {
   const [mode, setMode] = useState(null);
   const [items, setItems] = useState([]);
   const [mealLabel, setMealLabel] = useState('');
@@ -849,6 +1119,38 @@ function LogMealPage({ user, uid, foods, showToast, setPage, reloadMeals }) {
     }
     return f.slice(0, 100);
   }, [allFoods, searchQ, searchCat]);
+
+  // Recently logged foods (from last 7 days of meals)
+  const recentFoods = useMemo(() => {
+    const seen = new Set();
+    const result = [];
+    const meals = user.meals || {};
+    const dates = Object.keys(meals).sort().reverse().slice(0, 7);
+    for (const d of dates) {
+      for (const m of meals[d]) {
+        for (const it of m.items) {
+          if (!seen.has(it.name)) { seen.add(it.name); result.push(it); }
+          if (result.length >= 12) break;
+        }
+        if (result.length >= 12) break;
+      }
+      if (result.length >= 12) break;
+    }
+    return result;
+  }, [user.meals]);
+
+  // Popular foods (top from database by common categories)
+  const popularFoods = useMemo(() => {
+    return foods.filter(f => ['Breads','Rice','Lentils','Snacks','Fast Food','Breakfast'].includes(f.category)).slice(0, 12);
+  }, [foods]);
+
+  // Elapsed timer for AI analysis
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    if (!analyzing) { setElapsed(0); return; }
+    const t = setInterval(() => setElapsed(e => e + 1), 1000);
+    return () => clearInterval(t);
+  }, [analyzing]);
 
   const handleImage = async (file) => {
     if (!file) return;
@@ -918,7 +1220,7 @@ function LogMealPage({ user, uid, foods, showToast, setPage, reloadMeals }) {
 
   return (
     <div className="container">
-      <div className="header fade-in"><h1>Log Meal</h1></div>
+      <div className="header fade-in"><div><h1><span style={{color:'#fff',WebkitTextFillColor:'#fff'}}>Cal</span><span style={{background:'linear-gradient(135deg,#00cec9,#6c5ce7,#a29bfe)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>Track</span></h1><p style={{fontSize:12,color:'var(--text3)'}}>Log Meal</p></div>{profileBtn}</div>
       {!mode && (
         <div className="fade-in">
           <div className="input-group"><label>Meal Name (optional)</label><input value={mealLabel} onChange={e=>setMealLabel(e.target.value)} placeholder="e.g. Breakfast, Lunch, Dinner..." /></div>
@@ -941,8 +1243,13 @@ function LogMealPage({ user, uid, foods, showToast, setPage, reloadMeals }) {
         </div>
       )}
       {mode === 'analyzing' && <div className="fade-in" style={{padding:'24px 0'}}>
-        <p style={{color:'var(--primary-light)',fontWeight:600,marginBottom:4,fontSize:15}}>Analyzing your food...</p>
-        <p style={{color:'var(--text3)',fontSize:12,marginBottom:16}}>AI is identifying items from database</p>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
+          <div>
+            <p style={{color:'var(--primary-light)',fontWeight:600,fontSize:15}}>Analyzing your food...</p>
+            <p style={{color:'var(--text3)',fontSize:12,marginTop:2}}>Matching items from 976 food database</p>
+          </div>
+          <div className="elapsed-timer"><div className="elapsed-dot"></div>{elapsed}s</div>
+        </div>
         {[1,2,3].map(i => (
           <div key={i} className="shimmer-meal shimmer-skeleton" style={{animationDelay:`${i*0.1}s`}}>
             <div className="shimmer-circle shimmer-skeleton"></div>
@@ -986,10 +1293,34 @@ function LogMealPage({ user, uid, foods, showToast, setPage, reloadMeals }) {
             <button className="btn btn-ghost btn-sm" onClick={()=>setMode(items.length?'review':null)}><span className="material-icons-round">arrow_back</span></button>
             <h3>Search Food</h3>
           </div>
-          <div className="search-box"><span className="material-icons-round">search</span><input value={searchQ} onChange={e=>setSearchQ(e.target.value)} placeholder="Search Indian foods..." autoFocus /></div>
-          <div className="tab-pills">{categories.map(c=><button key={c} className={`tab-pill ${searchCat===c?'active':''}`} onClick={()=>setSearchCat(c)}>{c}</button>)}</div>
+          <div className="search-box"><span className="material-icons-round">search</span><input value={searchQ} onChange={e=>setSearchQ(e.target.value)} placeholder="Search 976 Indian foods..." autoFocus /></div>
+
+          {/* Recent & Popular suggestions when search is empty */}
+          {!searchQ && (
+            <div>
+              {recentFoods.length > 0 && (
+                <div className="suggest-section">
+                  <h4><span className="material-icons-round" style={{fontSize:14}}>history</span> Recently Logged</h4>
+                  <div className="suggest-chips">
+                    {recentFoods.slice(0,8).map((f,i) => (
+                      <div key={i} className="suggest-chip" onClick={()=>addFromSearch({...f, serving: f.quantity || '1 serving'})}>{f.name}</div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div className="suggest-section">
+                <h4><span className="material-icons-round" style={{fontSize:14}}>local_fire_department</span> Popular</h4>
+                <div className="suggest-chips">
+                  {popularFoods.slice(0,8).map((f,i) => (
+                    <div key={i} className="suggest-chip" onClick={()=>addFromSearch(f)}>{f.name}</div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="search-results">
-            {filteredFoods.map((f,i)=>(
+            {searchQ && filteredFoods.map((f,i)=>(
               <div key={i} className="search-result-item" onClick={()=>addFromSearch(f)}>
                 <div><div className="name">{f.name}</div><div className="meta">{f.serving} | P:{f.protein}g C:{f.carbs}g F:{f.fat}g</div></div>
                 <div className="cal">{f.calories}</div>
@@ -1041,7 +1372,7 @@ function ItemsReview({ items, updateQty, removeItem, totalCal, onAddMore, onSave
 }
 
 // ==================== WEIGHT TRACKER ====================
-function WeightPage({ user, uid, showToast, reloadWeights, reloadProfile }) {
+function WeightPage({ user, uid, showToast, reloadWeights, reloadProfile, profileBtn }) {
   const [weight, setWeight] = useState('');
   const [targetWeight, setTargetWeight] = useState(user.profile.targetWeight || '');
   const [editingTarget, setEditingTarget] = useState(false);
@@ -1094,17 +1425,23 @@ function WeightPage({ user, uid, showToast, reloadWeights, reloadProfile }) {
   };
 
   const doAIAnalysis = async () => {
-    setAnalyzing(true); setShowAnalysis(true);
+    if (analyzing) return;
+    setAnalyzing(true); setAnalysis('');
+    showToast('Analysis started — keep using the app!', 'info');
     try {
       const weightData = sortedDates.map(d=>({date:d,weight:weights[d]}));
       const mealData = [];
       const meals = user.meals || {};
-      Object.keys(meals).sort().slice(-21).forEach(d => { meals[d].forEach(m => { mealData.push({ date:d, label:m.label, totalCal: m.items.reduce((a,i)=>a+i.calories*i.qty,0), items: m.items.map(i=>i.name).join(', ') }); }); });
-      const res = await fetch('/api/ai-analysis', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ weightData, mealData, profile:p, tdee:Math.round(tdee), dailyBudget:budget }) });
+      Object.keys(meals).sort().slice(-21).forEach(d => { meals[d].forEach(m => {
+        const items = m.items || [];
+        mealData.push({ date:d, label:m.label, totalCal: items.reduce((a,i)=>a+i.calories*i.qty,0), totalProtein: items.reduce((a,i)=>a+(i.protein||0)*i.qty,0), totalCarbs: items.reduce((a,i)=>a+(i.carbs||0)*i.qty,0), totalFat: items.reduce((a,i)=>a+(i.fat||0)*i.qty,0), items: items.map(i=>i.name).join(', ') });
+      }); });
+      const res = await fetch('/api/ai-analysis', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ weightData, mealData, profile:p, tdee:Math.round(tdee), dailyBudget:budget, format:'structured' }) });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       setAnalysis(data.analysis);
-    } catch(err) { setAnalysis('Failed: ' + err.message); }
+      showToast('Analysis ready! Tap to view.');
+    } catch(err) { setAnalysis('Failed: ' + err.message); showToast('Analysis failed', 'error'); }
     setAnalyzing(false);
   };
 
@@ -1129,9 +1466,20 @@ function WeightPage({ user, uid, showToast, reloadWeights, reloadProfile }) {
     return () => { if(chartInstance.current) chartInstance.current.destroy(); };
   }, [sortedDates.length, weights, p.targetWeight]);
 
+  // Compute weekly insights
+  const weekWeightEntries = sortedDates.filter(d => {
+    const ago = new Date(); ago.setDate(ago.getDate() - 7);
+    return new Date(d) >= ago;
+  });
+  const weekChange = weekWeightEntries.length >= 2 ? weights[weekWeightEntries[weekWeightEntries.length-1]] - weights[weekWeightEntries[0]] : 0;
+  const avgDailyDeficitCal = Math.round(dailyDeficit);
+  const weeksToGoal = p.targetWeight && p.targetLossPerWeek ? Math.ceil(Math.max(0, currentWeight - p.targetWeight) / p.targetLossPerWeek) : null;
+  const goalDate = weeksToGoal ? new Date(Date.now() + weeksToGoal * 7 * 86400000).toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'}) : null;
+  const goalConfidence = weekChange <= 0 ? (weekChange <= -0.3 ? 'high' : 'mid') : 'low';
+
   return (
     <div className="container">
-      <div className="header fade-in"><h1>Weight Tracker</h1></div>
+      <div className="header fade-in"><div><h1><span style={{color:'#fff',WebkitTextFillColor:'#fff'}}>Cal</span><span style={{background:'linear-gradient(135deg,#00cec9,#6c5ce7,#a29bfe)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>Track</span></h1><p style={{fontSize:12,color:'var(--text3)'}}>Weight Tracker</p></div>{profileBtn}</div>
 
       {/* Current / Target / Diff */}
       <div className="card fade-in">
@@ -1145,7 +1493,7 @@ function WeightPage({ user, uid, showToast, reloadWeights, reloadProfile }) {
           <div style={{width:1,background:'var(--border)'}}></div>
           <div><div style={{fontSize:28,fontWeight:900,color:weightDiff>0.5?'var(--red)':'var(--green)'}}>{p.targetWeight ? (weightDiff>0?'+':'') + weightDiff.toFixed(1) : '—'}</div><div style={{fontSize:11,color:'var(--text3)'}}>To Go (kg)</div></div>
         </div>
-        {p.targetWeight && weightDiff > 2 && <div style={{marginTop:12,padding:8,borderRadius:8,background:'rgba(255,107,107,0.1)',textAlign:'center'}}><span className="badge badge-orange">External Variables Likely</span></div>}
+        {p.targetWeight && weightDiff > 2 && <div style={{marginTop:12,padding:8,borderRadius:8,background:'rgba(239,68,68,0.08)',textAlign:'center'}}><span className="chip chip-warning"><span className="chip-dot"></span> Off Track</span></div>}
       </div>
 
       {/* Set Target Modal */}
@@ -1179,8 +1527,52 @@ function WeightPage({ user, uid, showToast, reloadWeights, reloadProfile }) {
       {/* Chart */}
       {sortedDates.length >= 2 && <div className="card fade-in" style={{animationDelay:'0.2s'}}><h3 style={{fontSize:14,marginBottom:8}}>Weight Chart</h3><div className="chart-container"><canvas ref={chartRef}></canvas></div></div>}
 
-      {/* AI Analysis */}
-      <button className="btn btn-primary btn-full fade-in" style={{animationDelay:'0.25s',marginBottom:16}} onClick={doAIAnalysis}><span className="material-icons-round">auto_awesome</span> AI Analysis</button>
+      {/* AI Analysis — inline collapsible */}
+      <div className="card fade-in" style={{animationDelay:'0.25s',marginBottom:16,overflow:'hidden'}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',cursor:'pointer'}} onClick={()=>{ if(!analysis && !analyzing) doAIAnalysis(); else setShowAnalysis(!showAnalysis); }}>
+          <div style={{display:'flex',alignItems:'center',gap:10}}>
+            <div style={{width:36,height:36,borderRadius:10,background:analyzing?'rgba(251,191,36,0.12)':analysis?'rgba(52,211,153,0.12)':'rgba(108,92,231,0.12)',display:'flex',alignItems:'center',justifyContent:'center'}}>
+              <span className="material-icons-round" style={{fontSize:18,color:analyzing?'#fbbf24':analysis?'#34d399':'#a29bfe'}}>{analyzing?'hourglass_top':analysis?'auto_awesome':'auto_awesome'}</span>
+            </div>
+            <div>
+              <div style={{fontWeight:700,fontSize:14}}>AI Analysis</div>
+              <div style={{fontSize:11,color:'var(--text3)'}}>{analyzing?'Analyzing your data...':analysis?'Tap to view report':'Tap to start analysis'}</div>
+            </div>
+          </div>
+          <div style={{display:'flex',alignItems:'center',gap:6}}>
+            {analyzing && <div className="spinner" style={{width:18,height:18}}></div>}
+            {analysis && !analyzing && <span className="chip chip-success" style={{fontSize:10}}>Ready</span>}
+            {analysis && <span className="material-icons-round" style={{fontSize:16,color:'var(--text3)',transition:'transform 0.2s',transform:showAnalysis?'rotate(180deg)':'rotate(0)'}}>expand_more</span>}
+          </div>
+        </div>
+
+        {/* Collapsible report */}
+        {showAnalysis && analysis && !analyzing && (
+          <div style={{marginTop:16,paddingTop:16,borderTop:'1px solid rgba(255,255,255,0.06)',animation:'fadeIn 0.2s ease'}}>
+            {analysis.split('\n').map((line, idx) => {
+              const l = line.trim();
+              if (!l) return null;
+              // Section headers (## or ###)
+              if (l.startsWith('###')) return <h4 key={idx} style={{fontSize:13,fontWeight:700,color:'var(--primary-light)',marginTop:idx?12:0,marginBottom:4}}>{l.replace(/^#+\s*/,'')}</h4>;
+              if (l.startsWith('##')) return <h3 key={idx} style={{fontSize:14,fontWeight:800,color:'var(--accent)',marginTop:idx?16:0,marginBottom:6}}>{l.replace(/^#+\s*/,'')}</h3>;
+              // Bullet points with highlights
+              if (l.startsWith('- **') || l.startsWith('- *')) {
+                const parts = l.replace(/^-\s*/, '');
+                return <div key={idx} style={{display:'flex',gap:8,marginBottom:4,paddingLeft:4}}>
+                  <span style={{color:'var(--accent)',fontSize:12,marginTop:2}}>•</span>
+                  <span style={{fontSize:13,color:'var(--text2)',lineHeight:1.5}} dangerouslySetInnerHTML={{__html: parts.replace(/\*\*(.+?)\*\*/g,'<span style="color:#eeeef2;font-weight:700">$1</span>').replace(/\*(.+?)\*/g,'<em style="color:#a29bfe">$1</em>')}} />
+                </div>;
+              }
+              if (l.startsWith('- ')) return <div key={idx} style={{display:'flex',gap:8,marginBottom:4,paddingLeft:4}}><span style={{color:'var(--accent)',fontSize:12,marginTop:2}}>•</span><span style={{fontSize:13,color:'var(--text2)',lineHeight:1.5}}>{l.slice(2)}</span></div>;
+              // Regular text with bold highlights
+              return <p key={idx} style={{fontSize:13,color:'var(--text2)',lineHeight:1.6,marginBottom:6}} dangerouslySetInnerHTML={{__html: l.replace(/\*\*(.+?)\*\*/g,'<span style="color:#eeeef2;font-weight:700">$1</span>').replace(/\*(.+?)\*/g,'<em style="color:#a29bfe">$1</em>')}} />;
+            })}
+            <button className="btn btn-ghost btn-sm" style={{marginTop:12,fontSize:12}} onClick={(e)=>{e.stopPropagation();doAIAnalysis();}}>
+              <span className="material-icons-round" style={{fontSize:14}}>refresh</span> Re-analyze
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* Weight Log History */}
       {sortedDates.length > 0 && (
@@ -1191,25 +1583,24 @@ function WeightPage({ user, uid, showToast, reloadWeights, reloadProfile }) {
             const prevDate = sortedDates[sortedDates.indexOf(date) - 1];
             const prevW = prevDate ? weights[prevDate] : null;
             const diff = prevW ? (w - prevW) : 0;
+            const statusLabel = !prevW ? null : diff <= -0.2 ? 'on-track' : diff <= 0.2 ? 'plateau' : 'gaining';
             return (
-              <div key={date} className="meal-card fade-in" style={{animationDelay:`${i*0.03}s`}}>
-                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                  <div>
-                    <div style={{fontWeight:700,fontSize:18,color:'var(--primary-light)'}}>{w} kg</div>
-                    <div style={{fontSize:12,color:'var(--text3)',marginTop:2}}>
-                      {new Date(date+'T00:00:00').toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'})}
-                    </div>
+              <div key={date} className="meal-status-row fade-in" style={{animationDelay:`${i*0.03}s`}}>
+                <div className={`meal-status-icon ${statusLabel==='on-track'?'ok':statusLabel==='plateau'?'warn':'over'}`}>
+                  <span className="material-icons-round" style={{fontSize:18}}>{statusLabel==='on-track'?'trending_down':statusLabel==='plateau'?'trending_flat':'trending_up'}</span>
+                </div>
+                <div className="meal-status-info">
+                  <div style={{display:'flex',alignItems:'center',gap:8}}>
+                    <span className="meal-name">{w} kg</span>
+                    {statusLabel && <span className={`weight-chip ${statusLabel}`}>{statusLabel==='on-track'?'On Track':statusLabel==='plateau'?'Plateau':'Gaining'}</span>}
                   </div>
-                  <div style={{display:'flex',alignItems:'center',gap:12}}>
-                    {prevW && (
-                      <span className="badge" style={{background:diff<=0?'rgba(0,184,148,0.15)':'rgba(255,107,107,0.15)',color:diff<=0?'var(--green)':'var(--red)'}}>
-                        {diff>0?'+':''}{diff.toFixed(1)}kg
-                      </span>
-                    )}
-                    <button onClick={()=>deleteWeight(date)} style={{background:'none',border:'none',color:'var(--text3)',cursor:'pointer',padding:4}} title="Delete">
-                      <span className="material-icons-round" style={{fontSize:18}}>delete_outline</span>
-                    </button>
-                  </div>
+                  <div className="meal-items-preview">{new Date(date+'T00:00:00').toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'})}</div>
+                </div>
+                <div style={{display:'flex',alignItems:'center',gap:8}}>
+                  {prevW && <span style={{fontSize:13,fontWeight:600,color:diff<=0?'var(--green)':'var(--red)'}}>{diff>0?'+':''}{diff.toFixed(1)}</span>}
+                  <button onClick={()=>deleteWeight(date)} style={{background:'none',border:'none',color:'var(--text3)',cursor:'pointer',padding:4}}>
+                    <span className="material-icons-round" style={{fontSize:16}}>delete_outline</span>
+                  </button>
                 </div>
               </div>
             );
@@ -1217,21 +1608,15 @@ function WeightPage({ user, uid, showToast, reloadWeights, reloadProfile }) {
         </div>
       )}
 
-      {showAnalysis && <div className="modal-overlay" onClick={()=>setShowAnalysis(false)}><div className="modal" onClick={e=>e.stopPropagation()}>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
-          <h2 style={{margin:0}}>AI Analysis</h2>
-          <button onClick={()=>setShowAnalysis(false)} style={{background:'var(--bg3)',border:'none',borderRadius:50,width:32,height:32,color:'var(--text)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}><span className="material-icons-round" style={{fontSize:18}}>close</span></button>
-        </div>
-        {analyzing ? <div className="spinner"></div> : <div className="analysis-text">{analysis}</div>}
-      </div></div>}
     </div>
   );
 }
 
 // ==================== CALENDAR PAGE ====================
-function CalendarPage({ user, uid, foods, showToast }) {
+function CalendarPage({ user, uid, foods, showToast, profileBtn }) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
+  const [filter, setFilter] = useState('all');
   const year = currentMonth.getFullYear();
   const month = currentMonth.getMonth();
   const firstDay = new Date(year, month, 1).getDay();
@@ -1246,13 +1631,40 @@ function CalendarPage({ user, uid, foods, showToast }) {
   const bmr2 = calcBMR(currentW, p.height, p.age, p.gender);
   const budget2 = Math.round(bmr2 * p.activityFactor - (p.targetLossPerWeek*7700/7));
 
+  // Monthly stats
+  const loggedDays = days.filter(d => d && getDayCals(d) > 0).length;
+  const underDays = days.filter(d => d && getDayCals(d) > 0 && getDayCals(d) <= budget2).length;
+  const overDays = days.filter(d => d && getDayCals(d) > budget2).length;
+
+  const shouldShow = (d) => {
+    if (!d) return true;
+    const cals = getDayCals(d);
+    if (filter === 'all') return true;
+    if (filter === 'under') return cals > 0 && cals <= budget2;
+    if (filter === 'over') return cals > budget2;
+    if (filter === 'empty') return cals === 0;
+    return true;
+  };
+
   return (
     <div className="container">
-      <div className="header fade-in"><h1>Calendar</h1></div>
+      <div className="header fade-in"><div><h1><span style={{color:'#fff',WebkitTextFillColor:'#fff'}}>Cal</span><span style={{background:'linear-gradient(135deg,#00cec9,#6c5ce7,#a29bfe)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>Track</span></h1><p style={{fontSize:12,color:'var(--text3)'}}>Calendar</p></div>{profileBtn}</div>
+
+      {/* Filter Chips */}
+      <div className="filter-bar fade-in">
+        <button className={`filter-chip ${filter==='all'?'active':''}`} onClick={()=>setFilter('all')}>All</button>
+        <button className={`filter-chip ${filter==='under'?'active':''}`} onClick={()=>setFilter('under')}><span className="filter-dot" style={{background:'#34d399'}}></span> Under ({underDays})</button>
+        <button className={`filter-chip ${filter==='over'?'active':''}`} onClick={()=>setFilter('over')}><span className="filter-dot" style={{background:'#ef4444'}}></span> Over ({overDays})</button>
+        <button className={`filter-chip ${filter==='empty'?'active':''}`} onClick={()=>setFilter('empty')}>No Data</button>
+      </div>
+
       <div className="card fade-in">
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
           <button className="btn btn-ghost btn-sm" onClick={()=>setCurrentMonth(new Date(year,month-1,1))}><span className="material-icons-round">chevron_left</span></button>
-          <h3 style={{fontSize:16}}>{monthName}</h3>
+          <div style={{textAlign:'center'}}>
+            <h3 style={{fontSize:16}}>{monthName}</h3>
+            <span style={{fontSize:11,color:'var(--text3)'}}>{loggedDays} days logged</span>
+          </div>
           <button className="btn btn-ghost btn-sm" onClick={()=>setCurrentMonth(new Date(year,month+1,1))}><span className="material-icons-round">chevron_right</span></button>
         </div>
         <div className="calendar-grid">
@@ -1262,32 +1674,57 @@ function CalendarPage({ user, uid, foods, showToast }) {
             const dateStr = getDateStr(d);
             const cals = getDayCals(d);
             const hasData = cals > 0;
-            return <div key={i} className={`cal-day ${dateStr===todayStr()?'today':''} ${hasData?'has-data':''} ${cals>budget2?'over-budget':''}`} onClick={()=>hasData && setSelectedDate(dateStr)}>{d}</div>;
+            const dimmed = !shouldShow(d);
+            return <div key={i} className={`cal-day ${dateStr===todayStr()?'today':''} ${hasData?'has-data':''} ${cals>budget2?'over-budget':''} ${selectedDate===dateStr?'selected':''}`} style={dimmed?{opacity:0.15}:{}} onClick={()=>hasData && setSelectedDate(selectedDate===dateStr?null:dateStr)}>{d}</div>;
           })}
         </div>
       </div>
-      {selectedDate && <div className="modal-overlay" onClick={()=>setSelectedDate(null)}><div className="modal" onClick={e=>e.stopPropagation()}>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
-          <h2 style={{margin:0}}>{formatDate(selectedDate)}</h2>
-          <button onClick={()=>setSelectedDate(null)} style={{background:'var(--bg3)',border:'none',borderRadius:50,width:32,height:32,color:'var(--text)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}><span className="material-icons-round" style={{fontSize:18}}>close</span></button>
-        </div>
-        {user.weights && user.weights[selectedDate] && <p style={{fontSize:13,color:'var(--text3)',marginBottom:12}}>Weight: {user.weights[selectedDate]}kg</p>}
-        {(meals[selectedDate]||[]).map((meal,i)=>(
-          <div key={i} className="meal-card">
-            <div className="meal-card-header"><h3>{meal.label} <span style={{fontSize:11,color:'var(--text3)',fontWeight:400}}>{meal.time}</span></h3><span style={{fontWeight:700,color:'var(--accent)'}}>{meal.items.reduce((a,it)=>a+it.calories*it.qty,0)} cal</span></div>
-            {meal.items.map((it,j)=><div key={j} className="meal-item-row"><span>{it.name} {it.qty>1?`x${it.qty}`:''}</span><span style={{color:'var(--text3)'}}>{Math.round(it.calories*it.qty)} cal</span></div>)}
+
+      {/* Day details — inline below calendar */}
+      {selectedDate && (meals[selectedDate]||[]).length > 0 && (
+        <div className="card fade-in" style={{marginTop:0}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
+            <div>
+              <h3 style={{fontSize:15,fontWeight:700,margin:0}}>{formatDate(selectedDate)}</h3>
+              {user.weights && user.weights[selectedDate] && <span style={{fontSize:12,color:'var(--text3)'}}>{user.weights[selectedDate]} kg</span>}
+            </div>
+            <div style={{textAlign:'right'}}>
+              <span style={{fontSize:18,fontWeight:800,color:'var(--accent)'}}>{(meals[selectedDate]||[]).reduce((s,m)=>s+m.items.reduce((a,i)=>a+i.calories*i.qty,0),0)}</span>
+              <span style={{fontSize:11,color:'var(--text3)'}}> / {budget2} cal</span>
+            </div>
           </div>
-        ))}
-        <div style={{marginTop:12,textAlign:'center'}}><span style={{color:'var(--text3)',fontSize:13}}>Total: </span><span style={{fontSize:20,fontWeight:700,color:'var(--accent)'}}>{(meals[selectedDate]||[]).reduce((s,m)=>s+m.items.reduce((a,i)=>a+i.calories*i.qty,0),0)} cal</span></div>
-      </div></div>}
+          {(meals[selectedDate]||[]).map((meal,i)=>{
+            const mealCal = meal.items.reduce((a,it)=>a+it.calories*it.qty,0);
+            return (
+              <div key={i} style={{marginBottom:12,padding:'10px 12px',background:'rgba(255,255,255,0.02)',borderRadius:12,border:'1px solid rgba(255,255,255,0.04)'}}>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+                  <div style={{fontWeight:700,fontSize:14}}>{meal.label} <span style={{fontSize:11,color:'var(--text3)',fontWeight:400}}>{meal.time}</span></div>
+                  <span style={{fontWeight:800,color:'var(--accent)',fontSize:14}}>{mealCal} cal</span>
+                </div>
+                {meal.items.map((it,j)=>(
+                  <div key={j} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'5px 0',borderTop: j===0 ? '1px solid rgba(255,255,255,0.04)' : 'none'}}>
+                    <div>
+                      <span style={{fontSize:13,color:'var(--text)'}}>{it.name}</span>
+                      {it.qty > 1 && <span style={{fontSize:11,color:'var(--text3)',marginLeft:4}}>x{it.qty}</span>}
+                      <div style={{fontSize:11,color:'var(--text3)'}}>P:{Math.round((it.protein||0)*it.qty)}g  C:{Math.round((it.carbs||0)*it.qty)}g  F:{Math.round((it.fat||0)*it.qty)}g</div>
+                    </div>
+                    <span style={{fontSize:13,color:'var(--text2)',fontWeight:600}}>{Math.round(it.calories*it.qty)}</span>
+                  </div>
+                ))}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
 
 // ==================== SETTINGS PAGE ====================
-function SettingsPage({ user, uid, showToast, onLogout, reloadProfile }) {
+function SettingsPage({ user, uid, showToast, onLogout, reloadProfile, setPage }) {
   const p = user.profile;
-  const [form, setForm] = useState({ height:p.height, weight:p.weight, age:p.age, gender:p.gender, activityFactor:p.activityFactor, targetLossPerWeek:p.targetLossPerWeek });
+  const latestWeight = getLatestWeight(user);
+  const [form, setForm] = useState({ height:p.height, weight:latestWeight, age:p.age, gender:p.gender, activityFactor:p.activityFactor, targetLossPerWeek:p.targetLossPerWeek });
   const set = (k,v) => setForm({...form,[k]:v});
 
   const save = async () => {
@@ -1299,42 +1736,103 @@ function SettingsPage({ user, uid, showToast, onLogout, reloadProfile }) {
     reloadProfile();
   };
 
-  const bmr = calcBMR(parseFloat(form.weight),parseFloat(form.height),parseInt(form.age),form.gender);
+  const bmr = calcBMR(latestWeight,parseFloat(form.height),parseInt(form.age),form.gender);
   const tdee = bmr * parseFloat(form.activityFactor);
   const budget = Math.round(tdee - (parseFloat(form.targetLossPerWeek)*7700/7));
+  const deficit = Math.round(parseFloat(form.targetLossPerWeek)*7700/7);
 
   return (
     <div className="container">
-      <div className="header fade-in"><h1>Settings</h1></div>
+      <div className="header fade-in">
+        <div style={{display:'flex',alignItems:'center',gap:8}}>
+          <button className="btn btn-ghost btn-sm" onClick={()=>setPage('dashboard')}><span className="material-icons-round">arrow_back</span></button>
+          <h1>Profile Settings</h1>
+        </div>
+      </div>
+
+      {/* Profile Card */}
       <div className="card fade-in" style={{display:'flex',alignItems:'center',gap:12,marginBottom:16}}>
         <div className="avatar" style={{width:48,height:48,fontSize:20}}>
           {user.name[0].toUpperCase()}
         </div>
-        <div><div style={{fontWeight:600}}>{user.name}</div><div style={{fontSize:12,color:'var(--text3)'}}>@{uid}</div></div>
-      </div>
-      <div className="card fade-in">
-        <h3 style={{fontSize:16,marginBottom:16}}>Profile</h3>
-        <div style={{display:'flex',gap:8}}>
-          <div className="input-group" style={{flex:1}}><label>Gender</label><select value={form.gender} onChange={e=>set('gender',e.target.value)}><option value="male">Male</option><option value="female">Female</option></select></div>
-          <div className="input-group" style={{flex:1}}><label>Age</label><input type="number" value={form.age} onChange={e=>set('age',e.target.value)} /></div>
+        <div style={{flex:1}}>
+          <div style={{fontWeight:600}}>{user.name}</div>
+          <div style={{fontSize:12,color:'var(--text3)'}}>@{uid}</div>
         </div>
-        <div style={{display:'flex',gap:8}}>
-          <div className="input-group" style={{flex:1}}><label>Height (cm)</label><input type="number" value={form.height} onChange={e=>set('height',e.target.value)} /></div>
-          <div className="input-group" style={{flex:1}}><label>Weight (kg)</label><input type="number" step="0.1" value={form.weight} onChange={e=>set('weight',e.target.value)} /></div>
+        <span className="chip chip-success">Active</span>
+      </div>
+
+      {/* Inspector: Body */}
+      <div className="inspector-card fade-in">
+        <div className="inspector-header">
+          <span className="material-icons-round" style={{fontSize:16,color:'var(--accent)'}}>person</span>
+          Body
+        </div>
+        <div className="inspector-row">
+          <span className="inspector-label">Gender</span>
+          <select className="inspector-value" value={form.gender} onChange={e=>set('gender',e.target.value)} style={{background:'transparent',border:'none',color:'var(--text)',textAlign:'right',fontSize:13}}><option value="male">Male</option><option value="female">Female</option></select>
+        </div>
+        <div className="inspector-row">
+          <span className="inspector-label">Age</span>
+          <input className="inspector-value" type="number" value={form.age} onChange={e=>set('age',e.target.value)} style={{background:'transparent',border:'none',color:'var(--text)',textAlign:'right',width:60,fontSize:13}} />
+        </div>
+        <div className="inspector-row">
+          <span className="inspector-label">Height</span>
+          <div style={{display:'flex',alignItems:'center',gap:4}}>
+            <input className="inspector-value" type="number" value={form.height} onChange={e=>set('height',e.target.value)} style={{background:'transparent',border:'none',color:'var(--text)',textAlign:'right',width:50,fontSize:13}} />
+            <span style={{fontSize:11,color:'var(--text3)'}}>cm</span>
+          </div>
+        </div>
+        <div className="inspector-row">
+          <span className="inspector-label">Weight</span>
+          <div style={{display:'flex',alignItems:'center',gap:4}}>
+            <input className="inspector-value" type="number" step="0.1" value={form.weight} onChange={e=>set('weight',e.target.value)} style={{background:'transparent',border:'none',color:'var(--text)',textAlign:'right',width:50,fontSize:13}} />
+            <span style={{fontSize:11,color:'var(--text3)'}}>kg</span>
+          </div>
         </div>
       </div>
-      <div className="card fade-in" style={{animationDelay:'0.1s'}}>
-        <h3 style={{fontSize:16,marginBottom:16}}>Goals</h3>
-        <div className="input-group"><label>Activity Level <ActivityInfoBtn /></label><select value={form.activityFactor} onChange={e=>set('activityFactor',e.target.value)}>{ACTIVITY_FACTORS.map(a=><option key={a.value} value={a.value}>{a.label} ({a.value})</option>)}</select></div>
-        <div className="input-group"><label>Target Loss (kg/week)</label><select value={form.targetLossPerWeek} onChange={e=>set('targetLossPerWeek',e.target.value)}>{[0.25,0.5,0.75,1,1.25,1.5,2,2.5,3].map(v=><option key={v} value={v}>{v} kg/week</option>)}</select></div>
+
+      {/* Inspector: Goals */}
+      <div className="inspector-card fade-in" style={{animationDelay:'0.1s'}}>
+        <div className="inspector-header">
+          <span className="material-icons-round" style={{fontSize:16,color:'var(--accent)'}}>flag</span>
+          Goals
+        </div>
+        <div className="inspector-row">
+          <span className="inspector-label">Activity <ActivityInfoBtn /></span>
+          <select className="inspector-value" value={form.activityFactor} onChange={e=>set('activityFactor',e.target.value)} style={{background:'transparent',border:'none',color:'var(--text)',textAlign:'right',fontSize:12,maxWidth:140}}>{ACTIVITY_FACTORS.map(a=><option key={a.value} value={a.value}>{a.label}</option>)}</select>
+        </div>
+        <div className="inspector-row">
+          <span className="inspector-label">Weekly Loss</span>
+          <select className="inspector-value" value={form.targetLossPerWeek} onChange={e=>set('targetLossPerWeek',e.target.value)} style={{background:'transparent',border:'none',color:'var(--text)',textAlign:'right',fontSize:13}}>{[0.25,0.5,0.75,1,1.25,1.5,2,2.5,3].map(v=><option key={v} value={v}>{v} kg</option>)}</select>
+        </div>
       </div>
-      <div className="card fade-in" style={{animationDelay:'0.15s',background:'var(--bg)',textAlign:'center'}}>
-        <p style={{fontSize:13,color:'var(--text3)'}}>BMR: {Math.round(bmr)} | TDEE: {Math.round(tdee)}</p>
-        <p style={{fontSize:24,fontWeight:900,color:'var(--accent)',marginTop:4}}>Budget: {budget} cal/day</p>
-        <p style={{fontSize:12,color:'var(--text3)',marginTop:4}}>Deficit: {Math.round(parseFloat(form.targetLossPerWeek)*7700/7)} cal/day</p>
+
+      {/* Computed Stats Card */}
+      <div className="inspector-card fade-in" style={{animationDelay:'0.15s'}}>
+        <div className="inspector-header">
+          <span className="material-icons-round" style={{fontSize:16,color:'var(--accent)'}}>analytics</span>
+          Computed
+        </div>
+        <div className="inspector-row">
+          <span className="inspector-label">BMR</span>
+          <span style={{fontWeight:600,fontSize:13}}>{Math.round(bmr)} cal</span>
+        </div>
+        <div className="inspector-row">
+          <span className="inspector-label">TDEE</span>
+          <span style={{fontWeight:600,fontSize:13}}>{Math.round(tdee)} cal</span>
+        </div>
+        <div className="inspector-row">
+          <span className="inspector-label">Deficit</span>
+          <span className="chip chip-warning" style={{fontSize:11}}>{deficit} cal/day</span>
+        </div>
+        <div className="inspector-row" style={{borderBottom:'none'}}>
+          <span className="inspector-label" style={{fontWeight:600}}>Daily Budget</span>
+          <span style={{fontWeight:800,fontSize:16,color:'var(--accent)'}}>{budget} cal</span>
+        </div>
       </div>
+
       <button className="btn btn-primary btn-full fade-in" style={{animationDelay:'0.2s',marginBottom:12}} onClick={save}><span className="material-icons-round">save</span> Save Settings</button>
-      <button className="btn btn-danger btn-full fade-in" style={{animationDelay:'0.25s',marginBottom:12}} onClick={onLogout}><span className="material-icons-round">logout</span> Logout</button>
     </div>
   );
 }
@@ -1389,10 +1887,311 @@ function MealDetailModal({ user, uid, date, mealIndex, foods, showToast, onClose
   );
 }
 
+// ==================== FRIENDS PAGE ====================
+function FriendsPage({ uid, user, showToast, profileBtn }) {
+  const [tab, setTab] = useState('friends'); // friends | add
+  const [searchUser, setSearchUser] = useState('');
+  const [sending, setSending] = useState(false);
+  const [sendCooldown, setSendCooldown] = useState(0);
+  const [friends, setFriends] = useState([]);
+  const [incoming, setIncoming] = useState([]);
+  const [outgoing, setOutgoing] = useState([]);
+  const [friendNames, setFriendNames] = useState({});
+  const [viewingFriend, setViewingFriend] = useState(null);
+  const [friendData, setFriendData] = useState(null);
+  const [loadingFriend, setLoadingFriend] = useState(false);
+
+  const loadAll = async () => {
+    const f = await FS.getFriends(uid);
+    setFriends(f);
+    // Load friend display names
+    const names = {};
+    for (const fid of f) {
+      const p = await FS.getProfile(fid);
+      names[fid] = p?.name || fid;
+    }
+    setFriendNames(names);
+    setIncoming(await FS.getIncomingRequests(uid));
+    setOutgoing(await FS.getOutgoingRequests(uid));
+  };
+
+  useEffect(() => { loadAll(); }, []);
+
+  // Cooldown timer
+  useEffect(() => {
+    if (sendCooldown <= 0) return;
+    const t = setTimeout(() => setSendCooldown(sendCooldown - 1), 1000);
+    return () => clearTimeout(t);
+  }, [sendCooldown]);
+
+  const sendRequest = async () => {
+    if (!searchUser.trim() || sending || sendCooldown > 0) return;
+    setSending(true);
+    const result = await FS.sendFriendRequest(uid, searchUser.toLowerCase().trim());
+    setSending(false);
+    if (result.error) { showToast(result.error, 'error'); }
+    else { showToast('Friend request sent!'); setSearchUser(''); setSendCooldown(10); loadAll(); }
+  };
+
+  const accept = async (req) => {
+    await FS.acceptFriendRequest(req.id, req.from, req.to);
+    showToast(`${req.from} is now your friend!`);
+    loadAll();
+  };
+
+  const reject = async (req) => {
+    await FS.rejectFriendRequest(req.id);
+    showToast('Request declined');
+    loadAll();
+  };
+
+  const viewFriend = async (fid) => {
+    setViewingFriend(fid);
+    setLoadingFriend(true);
+    const data = await FS.getFriendData(fid);
+    setFriendData(data);
+    setLoadingFriend(false);
+  };
+
+  // Friend progress view
+  if (viewingFriend && friendData) {
+    return <FriendProgressView
+      friendUid={viewingFriend}
+      friendData={friendData}
+      friendName={friendNames[viewingFriend] || viewingFriend}
+      onBack={() => { setViewingFriend(null); setFriendData(null); }}
+    />;
+  }
+
+  return (
+    <div className="container">
+      <div className="header fade-in"><div><h1><span style={{color:'#fff',WebkitTextFillColor:'#fff'}}>Cal</span><span style={{background:'linear-gradient(135deg,#00cec9,#6c5ce7,#a29bfe)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>Track</span></h1><p style={{fontSize:12,color:'var(--text3)'}}>Friends</p></div>{profileBtn}</div>
+
+      {/* Tabs */}
+      <div style={{display:'flex',gap:8,marginBottom:16}} className="fade-in">
+        <button className={`filter-chip ${tab==='friends'?'active':''}`} onClick={()=>setTab('friends')}>My Friends ({friends.length})</button>
+        <button className={`filter-chip ${tab==='add'?'active':''}`} onClick={()=>setTab('add')}>Add Friend</button>
+        {incoming.length > 0 && <button className={`filter-chip ${tab==='requests'?'active':''}`} onClick={()=>setTab('requests')} style={{position:'relative'}}>
+          Requests <span style={{background:'var(--red)',color:'#fff',borderRadius:10,padding:'1px 6px',fontSize:10,fontWeight:700,marginLeft:4}}>{incoming.length}</span>
+        </button>}
+      </div>
+
+      {/* Add Friend */}
+      {tab === 'add' && (
+        <div className="card fade-in">
+          <h3 style={{fontSize:15,fontWeight:700,marginBottom:12}}>Send Friend Request</h3>
+          <div style={{display:'flex',gap:8}}>
+            <input value={searchUser} onChange={e=>setSearchUser(e.target.value)} placeholder="Enter username..." onKeyDown={e=>e.key==='Enter'&&sendRequest()} style={{flex:1,padding:'10px 14px',background:'var(--bg)',border:'1px solid var(--border)',borderRadius:10,color:'var(--text)',fontSize:14,outline:'none'}} />
+            <button className="btn btn-primary btn-sm" onClick={sendRequest} disabled={sending || sendCooldown > 0 || !searchUser.trim()} style={{opacity:(sending||sendCooldown>0||!searchUser.trim())?0.5:1}}>
+              {sending ? <span className="spinner" style={{width:16,height:16}}></span> : sendCooldown > 0 ? `${sendCooldown}s` : <span className="material-icons-round" style={{fontSize:18}}>send</span>}
+            </button>
+          </div>
+          {sendCooldown > 0 && <p style={{fontSize:12,color:'var(--text3)',marginTop:8}}>Wait {sendCooldown}s before sending another request</p>}
+
+          {/* Outgoing requests */}
+          {outgoing.length > 0 && (
+            <div style={{marginTop:16}}>
+              <h4 style={{fontSize:12,color:'var(--text3)',textTransform:'uppercase',letterSpacing:0.5,marginBottom:8}}>Pending Sent</h4>
+              {outgoing.map(r => (
+                <div key={r.id} className="meal-status-row" style={{marginBottom:4}}>
+                  <div className="meal-status-info" style={{paddingLeft:4}}>
+                    <div className="meal-name">{r.to}</div>
+                    <div style={{fontSize:11,color:'var(--text3)'}}>Waiting for response</div>
+                  </div>
+                  <span className="chip chip-warning" style={{fontSize:10}}>Pending</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Incoming Requests */}
+      {tab === 'requests' && (
+        <div className="fade-in">
+          {incoming.length === 0 && <div className="card" style={{textAlign:'center',padding:32,color:'var(--text3)'}}>No pending requests</div>}
+          {incoming.map(req => (
+            <div key={req.id} className="card" style={{display:'flex',alignItems:'center',gap:12,marginBottom:8}}>
+              <div className="avatar" style={{width:40,height:40,fontSize:16}}>{req.from[0].toUpperCase()}</div>
+              <div style={{flex:1}}>
+                <div style={{fontWeight:600}}>{req.from}</div>
+                <div style={{fontSize:11,color:'var(--text3)'}}>wants to be friends</div>
+              </div>
+              <div style={{display:'flex',gap:6}}>
+                <button className="btn btn-primary btn-sm" onClick={()=>accept(req)} style={{padding:'6px 12px'}}><span className="material-icons-round" style={{fontSize:16}}>check</span></button>
+                <button className="btn btn-danger btn-sm" onClick={()=>reject(req)} style={{padding:'6px 12px'}}><span className="material-icons-round" style={{fontSize:16}}>close</span></button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Friends List */}
+      {tab === 'friends' && (
+        <div className="fade-in">
+          {friends.length === 0 && (
+            <div className="card" style={{textAlign:'center',padding:32}}>
+              <span className="material-icons-round" style={{fontSize:48,color:'var(--text3)',opacity:0.3}}>people</span>
+              <p style={{color:'var(--text3)',marginTop:8}}>No friends yet</p>
+              <button className="btn btn-primary btn-sm" style={{marginTop:12}} onClick={()=>setTab('add')}>Add a Friend</button>
+            </div>
+          )}
+          {friends.map(fid => (
+            <div key={fid} className="meal-status-row" style={{marginBottom:8,cursor:'pointer'}} onClick={()=>viewFriend(fid)}>
+              <div className="avatar" style={{width:40,height:40,fontSize:16,flexShrink:0}}>{(friendNames[fid]||fid)[0].toUpperCase()}</div>
+              <div className="meal-status-info" style={{paddingLeft:4}}>
+                <div className="meal-name">{friendNames[fid] || fid}</div>
+                <div style={{fontSize:11,color:'var(--text3)'}}>@{fid}</div>
+              </div>
+              <span className="material-icons-round" style={{color:'var(--text3)',fontSize:18}}>chevron_right</span>
+            </div>
+          ))}
+        </div>
+      )}
+      {loadingFriend && <div style={{textAlign:'center',padding:32}}><div className="spinner"></div></div>}
+    </div>
+  );
+}
+
+// ==================== FRIEND PROGRESS VIEW ====================
+function FriendProgressView({ friendUid, friendData, friendName, onBack }) {
+  const { profile, weights, meals } = friendData;
+  if (!profile) return <div className="container"><div className="card" style={{textAlign:'center',padding:32,color:'var(--text3)'}}>Could not load profile</div></div>;
+
+  const today = todayStr();
+  const todayMeals = meals[today] || [];
+  const consumed = todayMeals.reduce((s,m) => s + m.items.reduce((a,i) => a + i.calories * i.qty, 0), 0);
+  const currentWeight = (() => { const d = Object.keys(weights).sort(); return d.length ? weights[d[d.length-1]] : profile.weight || 70; })();
+  const bmr = calcBMR(currentWeight, profile.height, profile.age, profile.gender);
+  const tdee = bmr * (profile.activityFactor || 1.2);
+  const budget = Math.round(tdee - ((profile.targetLossPerWeek || 0.5) * 7700 / 7));
+  const remaining = budget - consumed;
+  const pct = Math.min(consumed / budget, 1);
+  const circumference = 2 * Math.PI * 70;
+  const dashOffset = circumference * (1 - pct);
+  const ringOver = remaining < 0;
+
+  // Weight chart data — last 30 days
+  const sortedDates = Object.keys(weights).sort();
+  const last30 = sortedDates.slice(-30);
+  const chartRef = useRef(null);
+  const chartInstance = useRef(null);
+
+  useEffect(() => {
+    if (!chartRef.current || last30.length < 2) return;
+    if (chartInstance.current) chartInstance.current.destroy();
+    chartInstance.current = new Chart(chartRef.current, {
+      type: 'line',
+      data: {
+        labels: last30.map(d => new Date(d+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short'})),
+        datasets: [{
+          data: last30.map(d => weights[d]),
+          borderColor: '#a29bfe', backgroundColor: 'rgba(162,155,254,0.08)',
+          borderWidth: 2, pointRadius: 3, pointBackgroundColor: '#a29bfe',
+          fill: true, tension: 0.3
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: '#6c6c8a', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.03)' } },
+          y: { ticks: { color: '#6c6c8a', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.03)' } }
+        }
+      }
+    });
+    return () => { if (chartInstance.current) chartInstance.current.destroy(); };
+  }, []);
+
+  const weightDiff = profile.targetWeight ? (currentWeight - profile.targetWeight).toFixed(1) : null;
+  const progressPct = profile.targetWeight && profile.weight ? Math.min(100, Math.max(0, Math.round(((profile.weight - currentWeight) / (profile.weight - profile.targetWeight)) * 100))) : null;
+
+  return (
+    <div className="container">
+      <div className="header fade-in">
+        <div style={{display:'flex',alignItems:'center',gap:8}}>
+          <button className="btn btn-ghost btn-sm" onClick={onBack}><span className="material-icons-round">arrow_back</span></button>
+          <div>
+            <h1 style={{fontSize:20}}>{friendName}</h1>
+            <p style={{fontSize:11,color:'var(--text3)'}}>@{friendUid}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Today's Calories */}
+      <div className="card fade-in" style={{background:'linear-gradient(145deg, rgba(30,28,60,0.95), rgba(18,16,40,0.95))', border:'1px solid rgba(108,92,231,0.15)'}}>
+        <h3 style={{fontSize:12,color:'var(--text3)',textTransform:'uppercase',letterSpacing:0.5,marginBottom:12}}>Today's Calories</h3>
+        <div style={{display:'flex',alignItems:'center',gap:20}}>
+          <div style={{position:'relative',width:120,height:120,flexShrink:0}}>
+            <svg width="120" height="120" viewBox="0 0 160 160" style={{transform:'rotate(-90deg)'}}>
+              <defs>
+                <linearGradient id="friendRingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  {ringOver
+                    ? [<stop key="a" offset="0%" stopColor="#ef4444"/>, <stop key="b" offset="100%" stopColor="#fb7185"/>]
+                    : [<stop key="a" offset="0%" stopColor="#00cec9"/>, <stop key="b" offset="50%" stopColor="#6c5ce7"/>, <stop key="c" offset="100%" stopColor="#a29bfe"/>]
+                  }
+                </linearGradient>
+              </defs>
+              <circle cx="80" cy="80" r="70" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="8" />
+              <circle cx="80" cy="80" r="70" fill="none" stroke="url(#friendRingGrad)" strokeWidth="8" strokeDasharray={circumference} strokeDashoffset={dashOffset} strokeLinecap="round" style={{transition:'stroke-dashoffset 1.5s ease'}} />
+            </svg>
+            <div style={{position:'absolute',top:0,left:0,right:0,bottom:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}>
+              <div style={{fontSize:24,fontWeight:900,background:ringOver?'linear-gradient(135deg,#ef4444,#fb7185)':'linear-gradient(135deg,#00cec9,#a29bfe)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>{Math.round(remaining)}</div>
+              <div style={{fontSize:10,color:'var(--text3)'}}>left</div>
+            </div>
+          </div>
+          <div style={{flex:1}}>
+            <div style={{marginBottom:8}}><span style={{fontSize:12,color:'var(--text3)'}}>Eaten</span><div style={{fontSize:20,fontWeight:800,color:'var(--accent)'}}>{consumed} cal</div></div>
+            <div><span style={{fontSize:12,color:'var(--text3)'}}>Budget</span><div style={{fontSize:16,fontWeight:700,color:'var(--primary-light)'}}>{budget} cal</div></div>
+          </div>
+        </div>
+      </div>
+
+      {/* Weight Goal Progress */}
+      {profile.targetWeight && (
+        <div className="card fade-in" style={{animationDelay:'0.1s'}}>
+          <h3 style={{fontSize:12,color:'var(--text3)',textTransform:'uppercase',letterSpacing:0.5,marginBottom:12}}>Weight Goal</h3>
+          <div style={{display:'flex',justifyContent:'space-around',textAlign:'center',marginBottom:12}}>
+            <div><div style={{fontSize:22,fontWeight:800,color:'var(--primary-light)'}}>{currentWeight}</div><div style={{fontSize:10,color:'var(--text3)'}}>Current kg</div></div>
+            <div style={{display:'flex',alignItems:'center'}}><span className="material-icons-round" style={{color:'var(--text3)',fontSize:20}}>trending_flat</span></div>
+            <div><div style={{fontSize:22,fontWeight:800,color:'var(--accent)'}}>{profile.targetWeight}</div><div style={{fontSize:10,color:'var(--text3)'}}>Target kg</div></div>
+          </div>
+          {progressPct !== null && (
+            <div>
+              <div style={{display:'flex',justifyContent:'space-between',fontSize:11,color:'var(--text3)',marginBottom:4}}>
+                <span>{progressPct}% there</span>
+                <span>{weightDiff > 0 ? weightDiff + ' kg to go' : 'Goal reached!'}</span>
+              </div>
+              <div style={{height:6,borderRadius:3,background:'rgba(255,255,255,0.06)',overflow:'hidden'}}>
+                <div style={{height:'100%',borderRadius:3,width:`${progressPct}%`,background:'linear-gradient(90deg,#6c5ce7,#00cec9)',transition:'width 0.8s ease'}}></div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Weight Chart */}
+      {last30.length >= 2 && (
+        <div className="card fade-in" style={{animationDelay:'0.15s'}}>
+          <h3 style={{fontSize:12,color:'var(--text3)',textTransform:'uppercase',letterSpacing:0.5,marginBottom:12}}>Weight Trend</h3>
+          <div style={{height:180}}><canvas ref={chartRef}></canvas></div>
+        </div>
+      )}
+      {last30.length < 2 && (
+        <div className="card fade-in" style={{textAlign:'center',padding:24,color:'var(--text3)'}}>Not enough weight data to show chart</div>
+      )}
+    </div>
+  );
+}
+
 // ==================== BOTTOM NAV ====================
 function BottomNav({ page, setPage }) {
-  const items = [{id:'dashboard',icon:'home',label:'Home'},{id:'log',icon:'add_circle',label:'Log Meal'},{id:'weight',icon:'monitor_weight',label:'Weight'},{id:'calendar',icon:'calendar_month',label:'Calendar'},{id:'settings',icon:'settings',label:'Settings'}];
-  return <nav className="bottom-nav">{items.map(it=><button key={it.id} className={`nav-item ${page===it.id?'active':''}`} onClick={()=>setPage(it.id)}><span className="material-icons-round">{it.icon}</span>{it.label}</button>)}</nav>;
+  const items = [{id:'dashboard',icon:'home',label:'Home'},{id:'log',icon:'add_circle',label:'Log Meal'},{id:'weight',icon:'monitor_weight',label:'Weight'},{id:'calendar',icon:'calendar_month',label:'Calendar'},{id:'friends',icon:'people',label:'Friends'}];
+  return (
+    <nav className="bottom-nav">
+      {items.map(it=><button key={it.id} className={`nav-item ${page===it.id?'active':''}`} onClick={()=>setPage(it.id)}><span className="material-icons-round">{it.icon}</span>{it.label}</button>)}
+    </nav>
+  );
 }
 
 function getLatestWeight(user) {

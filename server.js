@@ -189,27 +189,37 @@ app.post('/api/ai-analysis', async (req, res) => {
       messages: [
         {
           role: 'system',
-          content: `You are a nutrition and fitness analyst. Analyze the user's calorie and weight tracking data. Provide actionable insights about their progress, patterns, and recommendations. Be encouraging but honest. Use simple language. Structure your response with clear sections. Consider Indian dietary patterns.`
+          content: `You are a concise nutrition coach. Give a SHORT, actionable analysis. Use markdown formatting: ## for sections, **bold** for key numbers, bullet points for lists. Keep it punchy — no filler. Consider Indian dietary patterns. Max 5-6 short sections. End with 2-3 specific meal swap suggestions.`
         },
         {
           role: 'user',
-          content: `Here's my tracking data:
+          content: `My tracking data:
 
 Profile: ${JSON.stringify(profile)}
-TDEE: ${tdee} cal/day
-Daily Budget: ${dailyBudget} cal/day
-Target: Lose ${profile.targetLossPerWeek} kg/week
+TDEE: ${tdee} cal/day | Budget: ${dailyBudget} cal/day | Target: Lose ${profile.targetLossPerWeek} kg/week
 
-Weight History (last entries): ${JSON.stringify(weightData.slice(-30))}
+Weight (recent): ${JSON.stringify(weightData.slice(-14))}
 
-Recent Meals: ${JSON.stringify(mealData.slice(-21))}
+Meals (recent): ${JSON.stringify(mealData.slice(-21))}
 
-Please analyze:
-1. Am I on track for my weight loss goal?
-2. Any patterns in my eating (overeating days, good days)?
-3. Nutritional balance assessment
-4. Specific recommendations for improvement
-5. Predicted timeline to reach goal weight if I continue this way`
+Give me a brief report with these sections:
+## Progress Verdict
+One-line verdict: am I on track? Include current vs target weight.
+
+## This Week's Pattern
+2-3 bullet points on eating patterns. Which days were good, which were over budget?
+
+## Nutrition Check
+How's my protein/carbs/fat balance? Am I eating enough protein? Be specific with numbers.
+
+## What To Change
+2-3 concrete, specific changes. Not generic advice — reference MY actual meals.
+
+## Meal Swaps
+Suggest 2-3 specific Indian meal swaps to cut calories while keeping me full. Reference foods I actually eat and suggest better alternatives.
+
+## Goal Timeline
+One line — at this rate, when will I hit my target? Be honest.`
         }
       ],
       max_tokens: 1500,
